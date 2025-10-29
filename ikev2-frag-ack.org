@@ -1,0 +1,249 @@
+# Do: title, toc:table-of-contents ::fixed-width-sections |tables
+# Do: ^:sup/sub with curly -:special-strings *:emphasis
+# Don't: prop:no-prop-drawers \n:preserve-linebreaks ':use-smart-quotes
+#+OPTIONS: prop:nil title:t toc:t \n:nil ::t |:t ^:{} -:t *:t ':nil
+
+#+RFC_CATEGORY: std
+#+RFC_NAME: draft-antony-ipsecme-ikev2-fragment-acknowledgment
+#+RFC_VERSION: 01
+#+RFC_IPR: trust200902
+#+RFC_STREAM: IETF
+#+RFC_XML_VERSION: 3
+#+RFC_CONSENSUS: true
+
+#+TITLE: IKEv2 Fragment Acknowledgment Extension
+#+RFC_SHORT_TITLE: IKEv2 Fragment Acknowledgment
+#+AUTHOR: Antony Antony
+#+EMAIL: antony.antony@secunet.com
+#+AFFILIATION: secunet Security Networks AG
+#+RFC_SHORT_ORG: secunet
+#+RFC_ADD_AUTHOR: ("Steffen Klassert" "steffen.klassert@secunet.com" ("secunet" "secunet Security Networks AG"))
+#+RFC_ADD_AUTHOR: ("Tobias Brunner" "tobias@codelabs.ch" ("" "codelabs GmbH"))
+#+RFC_AREA: Internet
+#+RFC_WORKGROUP: IP Security Maintenance and Extensions
+
+#+begin_abstract
+This document specifies an extension to the Internet Key Exchange
+Protocol Version 2 (IKEv2) that defines a mechanism for acknowledgment
+of IKEv2 message Fragments over UDP.  The mechanism allows the receiving peer
+to confirm reception of individual fragments during the IKE_AUTH
+exchange and subsequent exchanges.  As a result, the IKEv2 initiator
+needs to retransmit only the fragments that the responder reports as
+missing.  This improves reliability when large IKE messages are
+exchanged, such as those containing post-quantum cryptography (PQC)
+payloads, and reduces retransmission overhead, thereby improving IKEv2
+round-trip times in lossy networks.
+#+end_abstract
+
+#+RFC_KEYWORDS: ("IPsec" "ESP" "IKEv2")
+
+* Introduction
+
+The Internet Key Exchange Protocol Version 2 (IKEv2) [[RFC7296]] uses
+an unreliable transport (UDP) for message exchange.
+
+Originally, IKEv2 messages were small — typically a few hundred bytes
+to a few kilobytes — such that a simple fragmentation [[RFC7383]] and
+retransmission mechanism operating over UDP, without congestion control
+or partial acknowledgments, was practically sufficient.  However, with
+the introduction of post-quantum cryptographic (PQC) algorithms into
+IKEv2 [[RFC9370]], IKE peers are now required to exchange much larger
+messages than those produced by classical algorithms, often tens of
+kilobytes and sometimes approaching 64 kilobytes in size.
+
+There are also several proposals to extend IKEv2 beyond the 64-kilobyte
+payload limitation
+([I-D.nir-ipsecme-big-payload],
+ [I-D.smyslov-ipsecme-ikev2-extended-pld],
+ [I-D.tjhai-ikev2-beyond-64k-limit]).
+
+In the current IKEv2 fragmentation mechanism [[RFC7383]], when one or
+more fragments are lost, the sender retransmits all fragments of the
+message.  Practical experience shows that this can lead to significant
+retransmission overhead and long delays when large fragmented messages
+are exchanged.  In some chronic cases, peers may fail to establish an
+IKE SA even after dozens of retransmissions.  This document proposes a
+fragment acknowledgment mechanism for IKEv2, similar in concept to
+acknowledgment schemes used in QUIC [[RFC9000]].
+
+When both the responder and initiator support the new IKEv2 Fragment
+Acknowledgment message, the initiator retransmits only the fragments
+that the responder reports as missing, reducing bandwidth consumption
+and latency overhead.
+
+The current IKEv2 retransmission model is entirely initiator-driven:
+only the initiator can decide when to retransmit a message after a
+timeout [[RFC7383]]. The responder has no means to request
+retransmission or to signal that it has received an incomplete set of
+fragments.  This document proposes to extend that model slightly by
+allowing the responder, upon receiving one or more fragments of an
+IKE message and detecting that some fragments are missing, to send a
+single, Fragemnet Acknowledgment message indicating the missing
+fragments.  This message does not require a response and does not
+advance the IKEv2 Message ID state. And also this message MAY not be
+retransmtted
+
+
+** Terminology
+
+This document uses the following terms defined in [[RFC7296]]:
+
+
+* Requirements Language
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in BCP
+14 [[RFC2119]] [[RFC8174]] when, and only when, they appear in all
+capitals, as shown here.
+
+* IKEv2 Fragment Acknowledgment
+
+The Fragment Acknowledgment mechanism is primarily useful during
+IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA exchanges.  During
+IKE_AUTH and IKE_INTERMEDIATE, peer authentication may still be
+incomplete.  In IKE_AUTH, fragments are cryptographically protected,
+and SK_a and SK_e must already be derived.  The format of the fragment
+header is specified in [[RFC7383]].
+
+#+caption: IKE Fragment Ack message header
+#+name: ike-frag-ack-header
+#+begin_src
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                       Initiator SPI                           |
+ |                                                               |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                       Responder SPI                           |
+ |                                                               |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |  Next Payload | MjVer | MnVer | Exchange Type |     Flags     |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                          Message ID                           |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                            Length                             |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#+end_src
+
+-- Initiator SPI / Responder SPI:  Identifies the IKE SA.
+-- Next Payload: TBD1 = FRAGMENT_ACK
+-- Exchange Type: The IKE exchange being acknowledged
+-- Flags: (Response) Flag is set
+-- Message ID: Unique per request/response pair.
+-- Length: Total message length in bytes.
+
+This header is followed by the IKEv2 Fragment Acknowledgment payload.
+
+#+caption: IKE Fragment Ack message
+#+name: ike-frag-ack-msg
+#+begin_src
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Next Payload  |C|   RESERVED  |         Payload Length        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         ACK #1 (16)           |  Range #1                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         ACK #2 (16)           |  Range #2                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#+end_src
+
+The payload enumerates  a set of received fragments for a single IKE
+message. ACK # indicates highest fragment received from from Total Fragments.
+And thr Range # indicate contigous fragments acknowledging.
+It enables selective retransmission of only the missing
+fragments by the sender.  The Total Fragments field is part of each
+fragment header, as defined in [[RFC7383]], Section 2.5.
+
+** Sending Fragment Acknowledgment Message
+
+Only the IKE exchange responder sends this message. It may send an
+acknowledgment after receiving any fragment of a message.
+
+** Processing Fragment Acknowledgment Message
+
+Unlike typical IKEv2 exchanges, which complete when a response with the
+matching Message ID arrives, Fragment Acknowledgment messages do not
+indicate completion of the exchange.  Instead, this message requests
+retransmission of the missing fragments and MUST NOT advance the IKEv2
+Message ID.
+
+When the sender retransmits in response to a Fragment Acknowledgment,
+it SHOULD begin with the lowest missing fragment.  (See editor’s note
+below regarding potential use of INFORMATIONAL exchanges.)
+
+* Backward Compatibility
+
+Receipt of a Fragment Acknowledgment message MUST NOT be interpreted as
+advancing the IKEv2 exchange state.
+
+Implementations that do not recognize this payload will ignore it and
+continue using full-message retransmission, preserving backward
+compatibility.
+
+* Editors Notes Open Issues
+
+- Congestion control mechanisms such as TCP slow start are out of
+  scope.
+- Path MTU discovery mentioned in [[RFC7383]] is currently ignored;
+  applicability TBD.
+- When fragments exceed the path MTU, they may not be acknowledged,
+  and the IKE state will not advance. This will have re-fragmented
+	as in [[RFC7383]]
+- Why not use IKEv2 INFORMATIONL? That would adhere more to IKEv2.
+  However, every INFORMATIONL need a response. And if there is no
+  response the INFORMATIONL message might be retransmtted this would
+  lead to complex unpredictable retransmissions.
+- Why not make new IKEv2 exchange without a response? Instead of
+  responding to the same : responding with IKE_AUTH or IKE_INTERMEDIATE
+	this is worth considering. New Exchange IKE_FRAG_ACK : which has no
+	response. The message will carry IKE exchange and message ID it is
+	responding to. This might be bigger change. This will bigger protocol
+	change.
+
+** New Exchange: IKE_FRAG_ACK
+
+A possible design alternative is to define a new IKEv2 exchange type,
+IKE_FRAG_ACK, which carries fragment acknowledgment information but
+does not have a response.  Each IKE_FRAG_ACK message would include
+the Exchange Type and Message ID of the IKE message it acknowledges.
+This exchange has no response specified. It is one shot message.
+This approach would decouple fragment acknowledgment from existing IKE
+exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.
+
+** Why not TCP
+Reliable transport for IKEv2 over TCP, as proposed in
+[[I-D.ietf-ipsecme-ikev2-reliable-transport]], adds implementation
+complexity and resource cost. It requires maintaining both a TCP and
+UDP sockets, increasing energy use on low-powered devices.  Using TCP
+for IKE while keeping ESP in UDP mode through NAT gateways introduces
+additional state and resource requirements.  It may also be less
+friendly to hardware offloading and inefficient for low-power or
+mobile devices. Antony personally is strong believer: TCP is not the best
+solution here:) While QUIC would be overdoing it just get Fragment ack
+and congestion control.
+
+
+* Acknowledgments
+
+ACKs TBD
+
+* Security Considerations
+
+TBD
+
+* Normative References
+
+** RFC2119
+** RFC7296
+** RFC8174
+** RFC7383
+
+* Informative References
+** RFC9370
+** RFC9000
+** I-D.ietf-ipsecme-ikev2-reliable-transport
+
+
+* Additional Stuff
+
+TBD
