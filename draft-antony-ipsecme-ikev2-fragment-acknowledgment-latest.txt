@@ -5,23 +5,26 @@
 IP Security Maintenance and Extensions                         A. Antony
 Internet-Draft                                               S. Klassert
 Intended status: Standards Track                                 secunet
-Expires: 1 May 2026                                      28 October 2025
+Expires: 2 May 2026                                           T. Brunner
+                                                           codelabs GmbH
+                                                         29 October 2025
 
 
-                IKEv2 Fragment Acknowledgemnt Extension
+                IKEv2 Fragment Acknowledgment Extension
          draft-antony-ipsecme-ikev2-fragment-acknowledgment-01
 
 Abstract
 
-   *Abstract* This document specifies an extension to the Internet Key
-   Exchange Protocol Version 2 (IKEv2) that introduces acknowledgment
-   for IKEv2 message fragments.  The mechanism allows an endpoint to
-   confirm reception of individual fragments during the IKE_AUTH
-   exchange and subsequent exchanges.  This improves reliability when
-   large IKE messages are exchanged, such as those containing post-
+   This document specifies an extension to the Internet Key Exchange
+   Protocol Version 2 (IKEv2) that defines a mechanism for
+   acknowledgment of IKEv2 message Fragments over UDP.  The mechanism
+   allows the receiving peer to confirm reception of individual
+   fragments during the IKE_AUTH exchange and subsequent exchanges.  As
+   a result, the IKEv2 initiator needs to retransmit only the fragments
+   that the responder reports as missing.  This improves reliability
+   when large IKE messages are exchanged, such as those containing post-
    quantum cryptography (PQC) payloads, and reduces retransmission
-   overhead to improve PQC IKEv2 exchange round-trip times in lossy
-   networks.
+   overhead, thereby improving IKEv2 round-trip times in lossy networks.
 
 Status of This Memo
 
@@ -38,26 +41,28 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 1 May 2026.
+   This Internet-Draft will expire on 2 May 2026.
 
 Copyright Notice
 
    Copyright (c) 2025 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
+
+
+
+
+
+Antony, et al.             Expires 2 May 2026                   [Page 1]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
+
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents (https://trustee.ietf.org/
    license-info) in effect on the date of publication of this document.
    Please review these documents carefully, as they describe your rights
    and restrictions with respect to this document.  Code Components
-
-
-
-Antony & Klassert          Expires 1 May 2026                   [Page 1]
-
-Internet-Draft        IKEv2 Fragment Acknowledgemnt         October 2025
-
-
    extracted from this document must include Revised BSD License text as
    described in Section 4.e of the Trust Legal Provisions and are
    provided without warranty as described in the Revised BSD License.
@@ -67,127 +72,253 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
      1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Requirements Language . . . . . . . . . . . . . . . . . . . .   3
-   3.  IKEv2 Fragment Acknowledgemnt . . . . . . . . . . . . . . . .   3
-     3.1.  Fragment message format.  . . . . . . . . . . . . . . . .   3
-   4.  Operational Considerations  . . . . . . . . . . . . . . . . .   3
-   5.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   3
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
-   7.  Normative References  . . . . . . . . . . . . . . . . . . . .   4
-   8.  Informative References  . . . . . . . . . . . . . . . . . . .   4
-   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .   5
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   5
+   3.  IKEv2 Fragment Acknowledgment . . . . . . . . . . . . . . . .   3
+     3.1.  Sending Fragment Acknowledgment Message . . . . . . . . .   4
+     3.2.  Processing Fragment Acknowledgment Message  . . . . . . .   5
+   4.  Backward Compatibility  . . . . . . . . . . . . . . . . . . .   5
+   5.  Editors Notes Open Issues . . . . . . . . . . . . . . . . . .   5
+     5.1.  New Exchange: IKE_FRAG_ACK  . . . . . . . . . . . . . . .   6
+     5.2.  Why not TCP . . . . . . . . . . . . . . . . . . . . . . .   6
+   6.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   6
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
+   8.  Normative References  . . . . . . . . . . . . . . . . . . . .   6
+   9.  Informative References  . . . . . . . . . . . . . . . . . . .   7
+   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .   7
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   7
 
 1.  Introduction
 
    The Internet Key Exchange Protocol Version 2 (IKEv2) [RFC7296] uses
    an unreliable transport (UDP) for message exchange.
 
-   Originally, IKEv2 messages were small enough that a simple
-   fragmentation[RFC7383] and retransmission mechanism, operating over
-   UDP without congestion control or partial acknowledgments, was
-   practically sufficient.  However, with the introduction of post-
-   quantum cryptographic (PQC) algorithms into IKEv2 [RFC9370], IKE
-   peers are now required to exchange much larger messages than those
-   produced by classical algorithms — often tens or even kilobytes.
+   Originally, IKEv2 messages were small — typically a few hundred bytes
+   to a few kilobytes — such that a simple fragmentation [RFC7383] and
+   retransmission mechanism operating over UDP, without congestion
+   control or partial acknowledgments, was practically sufficient.
+   However, with the introduction of post-quantum cryptographic (PQC)
+   algorithms into IKEv2 [RFC9370], IKE peers are now required to
+   exchange much larger messages than those produced by classical
+   algorithms, often tens of kilobytes and sometimes approaching 64
+   kilobytes in size.
 
-   Several proposals have been made to overcome the 64-kilobyte
-   limitation on the size of an IKE payload ([I-D.nir-ipsecme-big-
-   payload], [I-D.smyslov-ipsecme-ikev2-extended-pld], [I-D.tjhai-ikev2-
-   beyond-64k-limit]).
+   There are also several proposals to extend IKEv2 beyond the
+   64-kilobyte payload limitation ([I-D.nir-ipsecme-big-payload], [I-
+   D.smyslov-ipsecme-ikev2-extended-pld], [I-D.tjhai-ikev2-beyond-64k-
+   limit]).
+
+
+
+
+Antony, et al.             Expires 2 May 2026                   [Page 2]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
 
    In the current IKEv2 fragmentation mechanism [RFC7383], when one or
    more fragments are lost, the sender retransmits all fragments of the
    message.  Practical experience shows that this can lead to
    significant retransmission overhead and long delays when large
-   fragmented messages are exchanged.  This document proposes a fragment
-   acknowledgment mechanism for IKEv2, similar in concept to
-   acknowledgment schemes used in QUIC, [RFC9001] to improve reliability
-   and efficiency.  When #+BEGIN_EXPORT ascii initiator peer rececee the
-   new IKEv2 fragment acknowledgment message it MAY retransmit only the
-   missing fragments. #+END_EXPORT
+   fragmented messages are exchanged.  In some chronic cases, peers may
+   fail to establish an IKE SA even after dozens of retransmissions.
+   This document proposes a fragment acknowledgment mechanism for IKEv2,
+   similar in concept to acknowledgment schemes used in QUIC [RFC9000].
 
-
-
-
-Antony & Klassert          Expires 1 May 2026                   [Page 2]
-
-Internet-Draft        IKEv2 Fragment Acknowledgemnt         October 2025
-
+   When both the responder and initiator support the new IKEv2 Fragment
+   Acknowledgment message, the initiator retransmits only the fragments
+   that the responder reports as missing, reducing bandwidth consumption
+   and latency overhead.
 
 1.1.  Terminology
 
-   This document uses the following terms defined in [RFC4301]:
-   Encapsulating Security Payload (ESP), Security Association (SA),
-   Security Policy Database (SPD).
+   This document uses the following terms defined in [RFC7296]:
 
 2.  Requirements Language
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
    "OPTIONAL" in this document are to be interpreted as described in BCP
-   14 [RFC2119] [RFC8174]when, and only when, they appear in all
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-   *Usecae Reliable transport for IKEv2 over TCP
-   [I-D.ietf-ipsecme-ikev2-reliable-transport].
+3.  IKEv2 Fragment Acknowledgment
 
-3.  IKEv2 Fragment Acknowledgemnt
+   The Fragment Acknowledgment mechanism is primarily useful during
+   IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA exchanges.  During
+   IKE_AUTH and IKE_INTERMEDIATE, peer authentication may still be
+   incomplete.  In IKE_AUTH, fragments are cryptographically protected,
+   and SK_a and SK_e must already be derived.  The format of the
+   fragment header is specified in [RFC7383].
 
-   The Fragment Acknowledgemnt is most useful during IKE_AUTH and
-   IKE_INTERMEDIATE and CREATE_CHILD_SA.  During the IKE_AUTH and likely
-   during IKE_INTERMEDIATE peer authentication is not complete.  During
-   IKE_AUTH exchange, IKE Fragment messages are cryptographically
-   protected, SK_a and SK_e must already be calculated.  The format of
-   the fragment is speicied in [RFC7383]
 
-3.1.  Fragment message format.
 
-   The responder can only acknowledge fragments after it receive the
-   first fragement.
 
-   If the sender is retrasmitting it should start with fragment one
-   until it receive an acknowledgment from the receiver it received the
-   first fragment.
 
-   Initialy thoughts are to allign frament format similar to QUIC
-   [RFC9001]
 
-4.  Operational Considerations
 
-   Message scalability for large number of nodes in the group think of
-   thousands to possibly millions of nodes.  Number of messages
-   exchanges to derive unique key.
 
-5.  Acknowledgments
+
+
+
+
+
+
+
+
+
+Antony, et al.             Expires 2 May 2026                   [Page 3]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Initiator SPI                           |
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Responder SPI                           |
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Next Payload | MjVer | MnVer | Exchange Type |     Flags     |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                          Message ID                           |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                            Length                             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                 Figure 1: IKE Fragment Ack message header
+
+   -- Initiator SPI / Responder SPI: Identifies the IKE SA. -- Next
+   Payload: TBD1 = FRAGMENT_ACK -- Exchange Type: The IKE exchange being
+   acknowledged -- Flags: (Response) Flag is set -- Message ID: Unique
+   per request/response pair. -- Length: Total message length in bytes.
+
+   This header is followed by the IKEv2 Fragment Acknowledgment payload.
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   | Next Payload  |C|   RESERVED  |         Payload Length        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         ACK #1 (16)           |  Range #1                     |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         ACK #2 (16)           |  Range #2                     |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                     Figure 2: IKE Fragment Ack message
+
+   The payload enumerates a set of received fragments for a single IKE
+   message.  ACK # indicates highest fragment received from from Total
+   Fragments.  And thr Range # indicate contigous fragments
+   acknowledging.  It enables selective retransmission of only the
+   missing fragments by the sender.  The Total Fragments field is part
+   of each fragment header, as defined in [RFC7383], Section 2.5.
+
+3.1.  Sending Fragment Acknowledgment Message
+
+   Only the IKE exchange responder sends this message.  It may send an
+   acknowledgment after receiving any fragment of a message.
+
+
+
+
+
+Antony, et al.             Expires 2 May 2026                   [Page 4]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
+
+3.2.  Processing Fragment Acknowledgment Message
+
+   Unlike typical IKEv2 exchanges, which complete when a response with
+   the matching Message ID arrives, Fragment Acknowledgment messages do
+   not indicate completion of the exchange.  Instead, this message
+   requests retransmission of the missing fragments and MUST NOT advance
+   the IKEv2 Message ID.
+
+   When the sender retransmits in response to a Fragment Acknowledgment,
+   it SHOULD begin with the lowest missing fragment.  (See editor’s note
+   below regarding potential use of INFORMATIONAL exchanges.)
+
+4.  Backward Compatibility
+
+   Receipt of a Fragment Acknowledgment message MUST NOT be interpreted
+   as advancing the IKEv2 exchange state.
+
+   Implementations that do not recognize this payload will ignore it and
+   continue using full-message retransmission, preserving backward
+   compatibility.
+
+5.  Editors Notes Open Issues
+
+   *  Congestion control mechanisms such as TCP slow start are out of
+      scope.
+
+   *  Path MTU discovery mentioned in [RFC7383] is currently ignored;
+      applicability TBD.
+
+   *  When fragments exceed the path MTU, they may not be acknowledged,
+      and the IKE state will not advance.  This will have re-fragmented
+      as in [RFC7383]
+
+   *  Why not use IKEv2 INFORMATIONL?  That would adhere more to IKEv2.
+      However, every INFORMATIONL need a response.  And if there is no
+      response the INFORMATIONL message might be retransmtted this would
+      lead to complex unpredictable retransmissions.
+
+   *  Why not make new IKEv2 exchange without a response?  Instead of
+      responding to the same : responding with IKE_AUTH or
+      IKE_INTERMEDIATE this is worth considering.  New Exchange
+      IKE_FRAG_ACK : which has no response.  The message will carry IKE
+      exchange and message ID it is responding to.  This might be bigger
+      change.  This will bigger protocol change.
+
+
+
+
+
+
+
+Antony, et al.             Expires 2 May 2026                   [Page 5]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
+
+5.1.  New Exchange: IKE_FRAG_ACK
+
+   A possible design alternative is to define a new IKE exchange type,
+   IKE_FRAG_ACK, which carries fragment acknowledgment information but
+   does not require a response.  Each IKE_FRAG_ACK message would include
+   the Exchange Type and Message ID of the IKE message it acknowledges.
+   This exchange has no response expected.  It one shot message.  This
+   approach would decouple fragment acknowledgment from existing IKE
+   exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.
+
+5.2.  Why not TCP
+
+   Reliable transport for IKEv2 over TCP, as proposed in
+   [I-D.ietf-ipsecme-ikev2-reliable-transport], adds implementation
+   complexity and resource cost.  It requires maintaining both a TCP and
+   UDP sockets, increasing energy use on low-powered devices.  Using TCP
+   for IKE while keeping ESP in UDP mode through NAT gateways introduces
+   additional state and resource requirements.  It may also be less
+   friendly to hardware offloading and inefficient for low-power or
+   mobile devices.  Antony personally is strong believer: TCP is not the
+   best solution here:) While QUIC would be overdoing it just get
+   Fragment ack and congestion control.
+
+6.  Acknowledgments
 
    ACKs TBD
 
-
-
-
-Antony & Klassert          Expires 1 May 2026                   [Page 3]
-
-Internet-Draft        IKEv2 Fragment Acknowledgemnt         October 2025
-
-
-6.  Security Considerations
+7.  Security Considerations
 
    TBD
 
-7.  Normative References
+8.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
-
-   [RFC4301]  Kent, S. and K. Seo, "Security Architecture for the
-              Internet Protocol", RFC 4301, DOI 10.17487/RFC4301,
-              December 2005, <https://www.rfc-editor.org/info/rfc4301>.
-
-   [RFC4303]  Kent, S., "IP Encapsulating Security Payload (ESP)",
-              RFC 4303, DOI 10.17487/RFC4303, December 2005,
-              <https://www.rfc-editor.org/info/rfc4303>.
 
    [RFC7296]  Kaufman, C., Hoffman, P., Nir, Y., Eronen, P., and T.
               Kivinen, "Internet Key Exchange Protocol Version 2
@@ -199,39 +330,19 @@ Internet-Draft        IKEv2 Fragment Acknowledgemnt         October 2025
               DOI 10.17487/RFC7383, November 2014,
               <https://www.rfc-editor.org/info/rfc7383>.
 
+
+
+
+Antony, et al.             Expires 2 May 2026                   [Page 6]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
+
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
-   [RFC9001]  Thomson, M., Ed. and S. Turner, Ed., "Using TLS to Secure
-              QUIC", RFC 9001, DOI 10.17487/RFC9001, May 2021,
-              <https://www.rfc-editor.org/info/rfc9001>.
-
-8.  Informative References
-
-   [I-D.ietf-ipsecme-eesp]
-              Klassert, S., Antony, A., and C. Hopps, "Enhanced
-              Encapsulating Security Payload (EESP)", Work in Progress,
-              Internet-Draft, draft-ietf-ipsecme-eesp-02, 19 October
-              2025, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              ipsecme-eesp-02>.
-
-
-
-
-
-
-Antony & Klassert          Expires 1 May 2026                   [Page 4]
-
-Internet-Draft        IKEv2 Fragment Acknowledgemnt         October 2025
-
-
-   [I-D.ietf-ipsecme-g-ikev2]
-              Smyslov, V. and B. Weis, "Group Key Management using
-              IKEv2", Work in Progress, Internet-Draft, draft-ietf-
-              ipsecme-g-ikev2-23, 31 July 2025,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-ipsecme-
-              g-ikev2-23>.
+9.  Informative References
 
    [I-D.ietf-ipsecme-ikev2-reliable-transport]
               Smyslov, V. and T. Reddy.K, "Separate Transports for IKE
@@ -240,18 +351,16 @@ Internet-Draft        IKEv2 Fragment Acknowledgemnt         October 2025
               <https://datatracker.ietf.org/doc/html/draft-ietf-ipsecme-
               ikev2-reliable-transport-00>.
 
-   [I-D.xia-ipsecme-eesp-stateless-encryption]
-              Xia, L. and W. Jiang, "Stateless Encryption Scheme of
-              Enhanced Encapsulating Security Payload (EESP)", Work in
-              Progress, Internet-Draft, draft-xia-ipsecme-eesp-
-              stateless-encryption-02, 20 October 2025,
-              <https://datatracker.ietf.org/doc/html/draft-xia-ipsecme-
-              eesp-stateless-encryption-02>.
+   [RFC9000]  Iyengar, J., Ed. and M. Thomson, Ed., "QUIC: A UDP-Based
+              Multiplexed and Secure Transport", RFC 9000,
+              DOI 10.17487/RFC9000, May 2021,
+              <https://www.rfc-editor.org/info/rfc9000>.
 
-   [RFC9420]  Barnes, R., Beurdouche, B., Robert, R., Millican, J.,
-              Omara, E., and K. Cohn-Gordon, "The Messaging Layer
-              Security (MLS) Protocol", RFC 9420, DOI 10.17487/RFC9420,
-              July 2023, <https://www.rfc-editor.org/info/rfc9420>.
+   [RFC9370]  Tjhai, CJ., Tomlinson, M., Bartlett, G., Fluhrer, S., Van
+              Geest, D., Garcia-Morchon, O., and V. Smyslov, "Multiple
+              Key Exchanges in the Internet Key Exchange Protocol
+              Version 2 (IKEv2)", RFC 9370, DOI 10.17487/RFC9370, May
+              2023, <https://www.rfc-editor.org/info/rfc9370>.
 
 Appendix A.  Additional Stuff
 
@@ -269,6 +378,9 @@ Authors' Addresses
    Email: steffen.klassert@secunet.com
 
 
+   Tobias Brunner
+   codelabs GmbH
+   Email: tobias@codelabs.ch
 
 
 
@@ -277,4 +389,4 @@ Authors' Addresses
 
 
 
-Antony & Klassert          Expires 1 May 2026                   [Page 5]
+Antony, et al.             Expires 2 May 2026                   [Page 7]
