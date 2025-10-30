@@ -188,11 +188,17 @@ fragment header, as defined in [[RFC7383]], Section 2.5.
 
 ** Sending Fragment Acknowledgment response
 
-The responder MAY send a Fragment Acknowledgment notification after
-receiving one or more fragments of a request. See
-[[ike-intermediate-request]]  Similarly, the initiator MAY send a
-Fragment Acknowledgment notification after receiving one or more
-fragments of a response. See [[ike-intermediate-response]].
+The responder MAY send a respsone to an exchange with Fragment
+Acknowledgment notification after receiving one or more fragments
+of a request. See [[ike-intermediate-request]]. Similarly, the
+initiator MAY send a Fragment Acknowledgment notification after
+receiving one or more fragments of a response. See [[ike-intermediate-response]].
+
+[NOTE: When the initiator sends a FRAGMENT_ACK notification in
+response to a fragmented response, it would need to set the IKE
+header Response flag (R) bit.  This results in a
+"response to a response" that uses the same Message ID, which is
+somewhat unusual in IKEv2 message flow. Need to be explicit.]
 
 ** Processing Fragment Acknowledgment Message
 
@@ -208,7 +214,7 @@ below regarding potential use of INFORMATIONAL exchanges.)
 
 * Backward Compatibility
 
-Receipt of a FRAGMENT_ACK notifier  MUST NOT be interpreted as
+Receipt of a FRAGMENT_ACK notification MUST NOT be interpreted as
 advancing the IKEv2 exchange state. Instead it is signal to retransmit
 only the missing fragments.
 
@@ -268,7 +274,7 @@ on this topic.
 
 One potential implementation issue I can see with these ACKs is the IV
 when using AEAD.  Both the request and the response use the same message
-ID as the actual messages  more than once. If the MID is used as IV
+ID as the actual messages more than once. If the MID is used as IV
 this would lead to resuse of IV. Which MUST be avoided.
 
 ** Discrepancy with RFC 7383 (IKEv2 fragmentation):
