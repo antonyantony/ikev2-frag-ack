@@ -23,16 +23,16 @@
 #+RFC_WORKGROUP: IP Security Maintenance and Extensions
 
 #+begin_abstract
-This document specifies an extension to the Internet Key Exchange
-Protocol Version 2 (IKEv2) that defines a mechanism for acknowledgment
-of IKEv2 message Fragments over UDP.  The mechanism allows the receiving peer
-to confirm reception of individual fragments during the IKE_AUTH
-exchange and subsequent exchanges.  As a result, the IKEv2 initiator
-needs to retransmit only the fragments that the responder reports as
-missing.  This improves reliability when large IKE messages are
-exchanged, such as those containing post-quantum cryptography (PQC)
-payloads, and reduces retransmission overhead, thereby improving IKEv2
-round-trip times in lossy networks.
+This document specifies one Notify Message Status Types for the
+Internet Key Exchange Protocol Version 2 (IKEv2) to support
+acknowledgment of IKEv2 message Fragments over UDP. The mechanism
+allows the receiving peer to confirm reception of individual
+fragments during the IKE_AUTH exchange and subsequent exchanges. As
+a result, the IKEv2 initiator needs to retransmit only the fragments
+that the responder reports as missing.  This improves reliability
+when large IKE messages are exchanged, such as those containing
+post-quantum cryptography (PQC) payloads, and reduces retransmission
+overhead, thereby improving IKEv2 round-trip times in lossy networks.
 #+end_abstract
 
 #+RFC_KEYWORDS: ("IPsec" "ESP" "IKEv2")
@@ -78,16 +78,15 @@ retransmission or to signal that it has received an incomplete set of
 fragments.  This document proposes to extend that model slightly by
 allowing the responder, upon receiving one or more fragments of an
 IKE message and detecting that some fragments are missing, to send a
-single, Fragemnet Acknowledgment message indicating the missing
-fragments.  This message does not require a response and does not
-advance the IKEv2 Message ID state. And also this message MAY not be
-retransmtted
-
+single, Fragment Acknowledgment Notifier indicating the missing
+fragments.  This message is sent  with IKEv2 flag Response and
+do not require a response and it does not advance the IKEv2 Message
+ID state. And also this message MAY not be retransmitted
 
 ** Terminology
 
 This document uses the following terms defined in [[RFC7296]]:
-IKE_AUTH, CREATE_CHILD_SA.
+IKE_INIT, IKE_AUTH, CREATE_CHILD_SA,  SK_e,  SK_a.
 
 This document uses the following terms defined in [[RFC9242]]:
 IKE_INTERMEDIATE.
@@ -100,72 +99,96 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 14 [[RFC2119]] [[RFC8174]] when, and only when, they appear in all
 capitals, as shown here.
 
-* IKEv2 Fragment Acknowledgment
+* FRAGMENT_ACK Notify Message Status Type payload
 
-The Fragment Acknowledgment mechanism is primarily useful during
-IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA exchanges.  During
-IKE_AUTH and IKE_INTERMEDIATE, peer authentication may still be
-incomplete.  In IKE_AUTH, fragments are cryptographically protected,
-and SK_a and SK_e must already be derived.  The format of the fragment
-header is specified in [[RFC7383]].
+The Fragment Acknowledgment Notifier, FRAGMENT_ACK, is primarily
+useful during IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA
+exchanges. During IKE_AUTH and IKE_INTERMEDIATE, peer authentication
+may still be incomplete.  In these exchanges, fragments are already
+protected by encryption and integrity using SK_e and SK_a, which
+must have been derived but not yet authenticated.  The format of
+the fragment header is specified in [[RFC7383]].
 
-#+caption: IKE Fragment Ack message header
-#+name: ike-frag-ack-header
+
+#+caption: IKE_INTERMEDIATE request
+#+name: ike-intermediate-request
 #+begin_src
-  0                   1                   2                   3
-  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+#Request
+Initiator                        Responder
+
+IKE_INTERMEDIATE --------------> received some fragments send back ACK
+                        /------- IKE_INTERMEDIATE (with ACK only)
+                       /
+Full retransmit       /
+IKE_INTERMEDIATE ----/--------->
+                 <---
+Only send missing fragments
+IKE_INTERMEDIATE --------------> Possibly repeat above until all
+                                 fragments received
+#+end_src
+
+#+caption: IKE_INTERMEDIATE response
+#+name: ike-intermediate-response
+#+begin_src
+# Response
+Initiator                        Responder
+
+                          /----- IKE_INTERMEDIATE (actual response)
+                         /
+Only send missing fragments
+IKE_INTERMEDIATE ------/------->
+                      /          Full retransmit if at least one
+                 <---/           fragment received (although see below)
+Received at least one     /----- IKE_INTERMEDIATE
+fragment                 /
+IKE_INTERMEDIATE (with ACK) --->
+                       /         Only send missing fragments
+                 <----/   /----- IKE_INTERMEDIATE
+Possibly send another    /
+ACK etc.                /
+                 <-----/
+#+end_src
+
+
+#+caption: FRAGMENT_ACK
+#+name: fragment-ack-notify
+#+begin_src
+   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-+-----------------------------+-------------------------------+
+ | Next Payload  !C!  RESERVED   !         Payload Length        |
+ +---------------+---------------+-------------------------------+
+ |  Protocol ID  !   SPI Size    !      Notify Message Type      |
+ +---------------+---------------+-------------------------------+
+ |         ACK #1 (16)           |  Range #1                     |
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |                       Initiator SPI                           |
- |                                                               |
- +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |                       Responder SPI                           |
- |                                                               |
- +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |  Next Payload | MjVer | MnVer | Exchange Type |     Flags     |
- +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |                          Message ID                           |
- +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |                            Length                             |
+ |         ACK #2 (16)           |  Range #2                     |
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 #+end_src
 
--- Initiator SPI / Responder SPI:  Identifies the IKE SA.
--- Next Payload: TBD1 = FRAGMENT_ACK
--- Exchange Type: The IKE exchange being acknowledged
--- Flags: (Response) Flag is set
--- Message ID: Unique per request/response pair.
--- Length: Total message length in bytes.
-
-This header is followed by the IKEv2 Fragment Acknowledgment payload.
-
-#+caption: IKE Fragment Ack message
-#+name: ike-frag-ack-msg
-#+begin_src
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Next Payload  |C|   RESERVED  |         Payload Length        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         ACK #1 (16)           |  Range #1                     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         ACK #2 (16)           |  Range #2                     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-#+end_src
+- Protocol ID (1 octet) - MUST be 0.  MUST be ignored if not 0.
+- SPI Size (1 octet) - MUST be 0.  MUST be ignored if not 0.
+- Notify Status Message Type value (2 octets) - set to [TBD1].
+- Pairs of ACK # and Range
 
 The payload enumerates  a set of received fragments for a single IKE
 message. ACK # indicates highest fragment received from from Total Fragments.
-And thr Range # indicate contigous fragments acknowledging.
+And thr Range # indicate contiguous fragments acknowledging.
 It enables selective retransmission of only the missing
 fragments by the sender.  The Total Fragments field is part of each
 fragment header, as defined in [[RFC7383]], Section 2.5.
 
-** Sending Fragment Acknowledgment Message
+** Sending Fragment Acknowledgment response
 
-Only the IKE exchange responder sends this message. It may send an
-acknowledgment after receiving any fragment of a message.
+The responder MAY send a Fragment Acknowledgment message after
+receiving one or more fragments of a request.  Similarly, the
+initiator MAY send a Fragment Acknowledgment message after receiving
+one or more fragments of a response.
 
 ** Processing Fragment Acknowledgment Message
 
 Unlike typical IKEv2 exchanges, which complete when a response with the
-matching Message ID arrives, Fragment Acknowledgment messages do not
+matching Message ID arrives, Fragment Acknowledgment Notifier do not
 indicate completion of the exchange.  Instead, this message requests
 retransmission of the missing fragments and MUST NOT advance the IKEv2
 Message ID.
@@ -176,8 +199,9 @@ below regarding potential use of INFORMATIONAL exchanges.)
 
 * Backward Compatibility
 
-Receipt of a Fragment Acknowledgment message MUST NOT be interpreted as
-advancing the IKEv2 exchange state.
+Receipt of a FRAGMENT_ACK notifier  MUST NOT be interpreted as
+advancing the IKEv2 exchange state. Instead it is signal to retransmit
+only the missing fragments.
 
 Implementations that do not recognize this payload will ignore it and
 continue using full-message retransmission, preserving backward
@@ -185,6 +209,7 @@ compatibility.
 
 * Editors Notes Open Issues
 
+- Should we negotiate the  support for FRAGMENT_ACK in IKE_INIT?
 - Congestion control mechanisms such as TCP slow start are out of
   scope.
 - Path MTU discovery mentioned in [[RFC7383]] is currently ignored;
@@ -192,9 +217,9 @@ compatibility.
 - When fragments exceed the path MTU, they may not be acknowledged,
   and the IKE state will not advance. This will have re-fragmented
 	as in [[RFC7383]]
-- Why not use IKEv2 INFORMATIONL? That would adhere more to IKEv2.
-  However, every INFORMATIONL need a response. And if there is no
-  response the INFORMATIONL message might be retransmtted this would
+- Why not use IKEv2 INFORMATIONAL? That would adhere more to IKEv2.
+  However, every INFORMATIONAL need a response. And if there is no
+  response the INFORMATIONAL message might be retransmitted this would
   lead to complex unpredictable retransmissions.
 - Why not make new IKEv2 exchange without a response? Instead of
   responding to the same : responding with IKE_AUTH or IKE_INTERMEDIATE
@@ -229,6 +254,28 @@ provide reliable transport and congestion control when using UDP,
 it would be complex for the limited goal of fragment acknowledgment
 and controlled retransmission.  Other authors may have different views
 on this topic.
+
+** IV reuse when using AEAD
+
+One potential implementation issue I can see with these ACKs is the IV
+when using AEAD.  Both the request and the response use the same message
+ID as the actual messages  more than once. If the MID is used as IV
+this would lead to resuse of IV. Which MUST be avoided.
+
+** Discrepancy with RFC 7383 (IKEv2 fragmentation):
+
+With FRAGMENT_ACK respone, a retransmission would not include the first
+fragment as required by [[RFC7383]].  May be add retransmissions should include
+the First Fragment?
+
+* IANA Considerations
+
+This document defines one new registration for the IANA
+"IKEv2 Notify Message Status Types" registry.
+
+|Value   | Notify Message Status Type  | Reference       |
+|--------|-----------------------------|-----------------|
+| [TBD1] | FRAGMENT_ACK                | [this document] |
 
 * Acknowledgments
 
