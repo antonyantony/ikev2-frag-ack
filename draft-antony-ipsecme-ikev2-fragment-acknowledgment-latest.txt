@@ -15,8 +15,8 @@ Expires: 3 May 2026                                           T. Brunner
 
 Abstract
 
-   This document specifies an extension to the Internet Key Exchange
-   Protocol Version 2 (IKEv2) that defines a mechanism for
+   This document specifies one Notify Message Status Types for the
+   Internet Key Exchange Protocol Version 2 (IKEv2) to support
    acknowledgment of IKEv2 message Fragments over UDP.  The mechanism
    allows the receiving peer to confirm reception of individual
    fragments during the IKE_AUTH exchange and subsequent exchanges.  As
@@ -72,19 +72,22 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
      1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Requirements Language . . . . . . . . . . . . . . . . . . . .   3
-   3.  IKEv2 Fragment Acknowledgment . . . . . . . . . . . . . . . .   4
-     3.1.  Sending Fragment Acknowledgment Message . . . . . . . . .   5
+   3.  FRAGMENT_ACK Notify Message Status Type payload . . . . . . .   4
+     3.1.  Sending Fragment Acknowledgment response  . . . . . . . .   5
      3.2.  Processing Fragment Acknowledgment Message  . . . . . . .   5
-   4.  Backward Compatibility  . . . . . . . . . . . . . . . . . . .   5
-   5.  Editors Notes Open Issues . . . . . . . . . . . . . . . . . .   5
+   4.  Backward Compatibility  . . . . . . . . . . . . . . . . . . .   6
+   5.  Editors Notes Open Issues . . . . . . . . . . . . . . . . . .   6
      5.1.  New Exchange: IKE_FRAG_ACK  . . . . . . . . . . . . . . .   6
-     5.2.  Why not TCP . . . . . . . . . . . . . . . . . . . . . . .   6
-   6.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   6
-   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
-   8.  Normative References  . . . . . . . . . . . . . . . . . . . .   7
-   9.  Informative References  . . . . . . . . . . . . . . . . . . .   7
-   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .   8
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   8
+     5.2.  Why not TCP . . . . . . . . . . . . . . . . . . . . . . .   7
+     5.3.  IV reuse when using AEAD  . . . . . . . . . . . . . . . .   7
+     5.4.  Discrepancy with RFC 7383 (IKEv2 fragmentation):  . . . .   7
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+   7.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   7
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
+   9.  Normative References  . . . . . . . . . . . . . . . . . . . .   8
+   10. Informative References  . . . . . . . . . . . . . . . . . . .   8
+   Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .   9
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
 
 1.  Introduction
 
@@ -101,10 +104,7 @@ Table of Contents
    algorithms, often tens of kilobytes and sometimes approaching 64
    kilobytes in size.
 
-   There are also several proposals to extend IKEv2 beyond the
-   64-kilobyte payload limitation ([I-D.nir-ipsecme-big-payload], [I-
-   D.smyslov-ipsecme-ikev2-extended-pld], [I-D.tjhai-ikev2-beyond-64k-
-   limit]).
+
 
 
 
@@ -113,6 +113,11 @@ Antony, et al.             Expires 3 May 2026                   [Page 2]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
+
+   There are also several proposals to extend IKEv2 beyond the
+   64-kilobyte payload limitation ([I-D.nir-ipsecme-big-payload], [I-
+   D.smyslov-ipsecme-ikev2-extended-pld], [I-D.tjhai-ikev2-beyond-64k-
+   limit]).
 
    In the current IKEv2 fragmentation mechanism [RFC7383], when one or
    more fragments are lost, the sender retransmits all fragments of the
@@ -135,15 +140,15 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
    fragments.  This document proposes to extend that model slightly by
    allowing the responder, upon receiving one or more fragments of an
    IKE message and detecting that some fragments are missing, to send a
-   single, Fragemnet Acknowledgment message indicating the missing
-   fragments.  This message does not require a response and does not
-   advance the IKEv2 Message ID state.  And also this message MAY not be
-   retransmtted
+   single, Fragment Acknowledgment Notifier indicating the missing
+   fragments.  This message is sent with IKEv2 flag Response and do not
+   require a response and it does not advance the IKEv2 Message ID
+   state.  And also this message MAY not be retransmitted
 
 1.1.  Terminology
 
    This document uses the following terms defined in [RFC7296]:
-   IKE_AUTH, CREATE_CHILD_SA.
+   IKE_INIT, IKE_AUTH, CREATE_CHILD_SA, SK_e, SK_a.
 
    This document uses the following terms defined in [RFC9242]:
    IKE_INTERMEDIATE.
@@ -160,60 +165,55 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
 
-
-
-
-
-
 Antony, et al.             Expires 3 May 2026                   [Page 3]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
-3.  IKEv2 Fragment Acknowledgment
+3.  FRAGMENT_ACK Notify Message Status Type payload
 
-   The Fragment Acknowledgment mechanism is primarily useful during
-   IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA exchanges.  During
-   IKE_AUTH and IKE_INTERMEDIATE, peer authentication may still be
-   incomplete.  In IKE_AUTH, fragments are cryptographically protected,
-   and SK_a and SK_e must already be derived.  The format of the
+   The Fragment Acknowledgment Notifier, FRAGMENT_ACK, is primarily
+   useful during IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA
+   exchanges.  During IKE_AUTH and IKE_INTERMEDIATE, peer authentication
+   may still be incomplete.  In these exchanges, fragments are already
+   protected by encryption and integrity using SK_e and SK_a, which must
+   have been derived but not yet authenticated.  The format of the
    fragment header is specified in [RFC7383].
 
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Initiator SPI                           |
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Responder SPI                           |
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |  Next Payload | MjVer | MnVer | Exchange Type |     Flags     |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                          Message ID                           |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                            Length                             |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   #Request
+   Initiator                        Responder
 
-                 Figure 1: IKE Fragment Ack message header
+   IKE_INTERMEDIATE --------------> received some fragments send back ACK
+                           /------- IKE_INTERMEDIATE (with ACK only)
+                          /
+   Full retransmit       /
+   IKE_INTERMEDIATE ----/--------->
+                    <---
+   Only send missing fragments
+   IKE_INTERMEDIATE --------------> Possibly repeat above until all
+                                    fragments received
 
-   -- Initiator SPI / Responder SPI: Identifies the IKE SA. -- Next
-   Payload: TBD1 = FRAGMENT_ACK -- Exchange Type: The IKE exchange being
-   acknowledged -- Flags: (Response) Flag is set -- Message ID: Unique
-   per request/response pair. -- Length: Total message length in bytes.
+                     Figure 1: IKE_INTERMEDIATE request
 
-   This header is followed by the IKEv2 Fragment Acknowledgment payload.
+   # Response
+   Initiator                        Responder
 
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   | Next Payload  |C|   RESERVED  |         Payload Length        |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         ACK #1 (16)           |  Range #1                     |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         ACK #2 (16)           |  Range #2                     |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                             /----- IKE_INTERMEDIATE (actual response)
+                            /
+   Only send missing fragments
+   IKE_INTERMEDIATE ------/------->
+                         /          Full retransmit if at least one
+                    <---/           fragment received (although see below)
+   Received at least one     /----- IKE_INTERMEDIATE
+   fragment                 /
+   IKE_INTERMEDIATE (with ACK) --->
+                          /         Only send missing fragments
+                    <----/   /----- IKE_INTERMEDIATE
+   Possibly send another    /
+   ACK etc.                /
+                    <-----/
 
-                     Figure 2: IKE Fragment Ack message
-
+                    Figure 2: IKE_INTERMEDIATE response
 
 
 
@@ -226,22 +226,46 @@ Antony, et al.             Expires 3 May 2026                   [Page 4]
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
+     1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-----------------------------+-------------------------------+
+   | Next Payload  !C!  RESERVED   !         Payload Length        |
+   +---------------+---------------+-------------------------------+
+   |  Protocol ID  !   SPI Size    !      Notify Message Type      |
+   +---------------+---------------+-------------------------------+
+   |         ACK #1 (16)           |  Range #1                     |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         ACK #2 (16)           |  Range #2                     |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                           Figure 3: FRAGMENT_ACK
+
+   *  Protocol ID (1 octet) - MUST be 0.  MUST be ignored if not 0.
+
+   *  SPI Size (1 octet) - MUST be 0.  MUST be ignored if not 0.
+
+   *  Notify Status Message Type value (2 octets) - set to [TBD1].
+
+   *  Pairs of ACK # and Range
+
    The payload enumerates a set of received fragments for a single IKE
    message.  ACK # indicates highest fragment received from from Total
-   Fragments.  And thr Range # indicate contigous fragments
+   Fragments.  And thr Range # indicate contiguous fragments
    acknowledging.  It enables selective retransmission of only the
    missing fragments by the sender.  The Total Fragments field is part
    of each fragment header, as defined in [RFC7383], Section 2.5.
 
-3.1.  Sending Fragment Acknowledgment Message
+3.1.  Sending Fragment Acknowledgment response
 
-   Only the IKE exchange responder sends this message.  It may send an
-   acknowledgment after receiving any fragment of a message.
+   The responder MAY send a Fragment Acknowledgment message after
+   receiving one or more fragments of a request.  Similarly, the
+   initiator MAY send a Fragment Acknowledgment message after receiving
+   one or more fragments of a response.
 
 3.2.  Processing Fragment Acknowledgment Message
 
    Unlike typical IKEv2 exchanges, which complete when a response with
-   the matching Message ID arrives, Fragment Acknowledgment messages do
+   the matching Message ID arrives, Fragment Acknowledgment Notifier do
    not indicate completion of the exchange.  Instead, this message
    requests retransmission of the missing fragments and MUST NOT advance
    the IKEv2 Message ID.
@@ -250,16 +274,27 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
    it SHOULD begin with the lowest missing fragment.  (See editor’s note
    below regarding potential use of INFORMATIONAL exchanges.)
 
+
+
+
+Antony, et al.             Expires 3 May 2026                   [Page 5]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
+
 4.  Backward Compatibility
 
-   Receipt of a Fragment Acknowledgment message MUST NOT be interpreted
-   as advancing the IKEv2 exchange state.
+   Receipt of a FRAGMENT_ACK notifier MUST NOT be interpreted as
+   advancing the IKEv2 exchange state.  Instead it is signal to
+   retransmit only the missing fragments.
 
    Implementations that do not recognize this payload will ignore it and
    continue using full-message retransmission, preserving backward
    compatibility.
 
 5.  Editors Notes Open Issues
+
+   *  Should we negotiate the support for FRAGMENT_ACK in IKE_INIT?
 
    *  Congestion control mechanisms such as TCP slow start are out of
       scope.
@@ -271,21 +306,10 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
       and the IKE state will not advance.  This will have re-fragmented
       as in [RFC7383]
 
-
-
-
-
-
-
-Antony, et al.             Expires 3 May 2026                   [Page 5]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
-
-
-   *  Why not use IKEv2 INFORMATIONL?  That would adhere more to IKEv2.
-      However, every INFORMATIONL need a response.  And if there is no
-      response the INFORMATIONL message might be retransmtted this would
-      lead to complex unpredictable retransmissions.
+   *  Why not use IKEv2 INFORMATIONAL?  That would adhere more to IKEv2.
+      However, every INFORMATIONAL need a response.  And if there is no
+      response the INFORMATIONAL message might be retransmitted this
+      would lead to complex unpredictable retransmissions.
 
    *  Why not make new IKEv2 exchange without a response?  Instead of
       responding to the same : responding with IKE_AUTH or
@@ -303,6 +327,16 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
    This exchange has no response specified.  It is one shot message.
    This approach would decouple fragment acknowledgment from existing
    IKE exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.
+
+
+
+
+
+
+Antony, et al.             Expires 3 May 2026                   [Page 6]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
 
 5.2.  Why not TCP
 
@@ -322,23 +356,49 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
    acknowledgment and controlled retransmission.  Other authors may have
    different views on this topic.
 
-6.  Acknowledgments
+5.3.  IV reuse when using AEAD
+
+   One potential implementation issue I can see with these ACKs is the
+   IV when using AEAD.  Both the request and the response use the same
+   message ID as the actual messages more than once.  If the MID is used
+   as IV this would lead to resuse of IV.  Which MUST be avoided.
+
+5.4.  Discrepancy with RFC 7383 (IKEv2 fragmentation):
+
+   With FRAGMENT_ACK respone, a retransmission would not include the
+   first fragment as required by [RFC7383].  May be add retransmissions
+   should include the First Fragment?
+
+6.  IANA Considerations
+
+   This document defines one new registration for the IANA "IKEv2 Notify
+   Message Status Types" registry.
+
+         +========+============================+=================+
+         | Value  | Notify Message Status Type | Reference       |
+         +========+============================+=================+
+         | [TBD1] | FRAGMENT_ACK               | [this document] |
+         +--------+----------------------------+-----------------+
+
+                                  Table 1
+
+7.  Acknowledgments
 
    ACKs TBD
 
-7.  Security Considerations
-
-   TBD
 
 
 
-
-Antony, et al.             Expires 3 May 2026                   [Page 6]
+Antony, et al.             Expires 3 May 2026                   [Page 7]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
-8.  Normative References
+8.  Security Considerations
+
+   TBD
+
+9.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -359,7 +419,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
-9.  Informative References
+10.  Informative References
 
    [I-D.ietf-ipsecme-ikev2-reliable-transport]
               Smyslov, V. and T. Reddy.K, "Separate Transports for IKE
@@ -378,21 +438,23 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
               DOI 10.17487/RFC9242, May 2022,
               <https://www.rfc-editor.org/info/rfc9242>.
 
+
+
+
+
+
+
+
+Antony, et al.             Expires 3 May 2026                   [Page 8]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
+
+
    [RFC9370]  Tjhai, CJ., Tomlinson, M., Bartlett, G., Fluhrer, S., Van
               Geest, D., Garcia-Morchon, O., and V. Smyslov, "Multiple
               Key Exchanges in the Internet Key Exchange Protocol
               Version 2 (IKEv2)", RFC 9370, DOI 10.17487/RFC9370, May
               2023, <https://www.rfc-editor.org/info/rfc9370>.
-
-
-
-
-
-
-Antony, et al.             Expires 3 May 2026                   [Page 7]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
-
 
 Appendix A.  Additional Stuff
 
@@ -439,10 +501,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-
-
-Antony, et al.             Expires 3 May 2026                   [Page 8]
+Antony, et al.             Expires 3 May 2026                   [Page 9]
