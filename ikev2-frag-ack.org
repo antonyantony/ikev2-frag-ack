@@ -52,10 +52,9 @@ messages than those produced by classical algorithms, often tens of
 kilobytes and sometimes approaching 64 kilobytes in size.
 
 There are also several proposals to extend IKEv2 beyond the 64-kilobyte
-payload limitation
-([I-D.nir-ipsecme-big-payload],
- [I-D.smyslov-ipsecme-ikev2-extended-pld],
- [I-D.tjhai-ikev2-beyond-64k-limit]).
+payload limitation [[I-D.nir-ipsecme-big-payload]],
+ [[I-D.smyslov-ipsecme-ikev2-extended-pld]],
+ [[I-D.tjhai-ikev2-beyond-64k-limit]].
 
 In the current IKEv2 fragmentation mechanism [[RFC7383]], when one or
 more fragments are lost, the sender retransmits all fragments of the
@@ -67,7 +66,7 @@ fragment acknowledgment mechanism for IKEv2, similar in concept to
 acknowledgment schemes used in QUIC [[RFC9000]].
 
 When both the responder and initiator support the new IKEv2 Fragment
-Acknowledgment message, the initiator retransmits only the fragments
+Acknowledgment, the initiator retransmits only the fragments
 that the responder reports as missing, reducing bandwidth consumption
 and latency overhead.
 
@@ -77,8 +76,15 @@ timeout [[RFC7383]]. The responder has no means to request
 retransmission or to signal that it has received an incomplete set of
 fragments.  This document proposes to extend that model slightly by
 allowing the responder, upon receiving one or more fragments of an
+
 IKE message and detecting that some fragments are missing, to send a
-single, Fragment Acknowledgment Notifier indicating the missing
+IKEv2 response, of the same excange with Fragment Acknowledgment
+notification indicating the missing fragments. This message is sent
+with the IKEv2 Response flag set.  It does not require a response,
+does not advance the IKEv2 Message ID state.
+
+IKE message and detecting that some fragments are missing, to send a
+single, Fragment Acknowledgment notification indicating the missing
 fragments.  This message is sent  with IKEv2 flag Response and
 do not require a response and it does not advance the IKEv2 Message
 ID state. And also this message MAY not be retransmitted
@@ -172,26 +178,29 @@ ACK etc.                /
 - Pairs of ACK # and Range
 
 The payload enumerates  a set of received fragments for a single IKE
-message. ACK # indicates highest fragment received from from Total Fragments.
-And thr Range # indicate contiguous fragments acknowledging.
+
+message. The ACK # field indicates the highest fragment received from
+the total number of fragments, and the Range # field indicates the
+contiguous range of acknowledged fragments.
 It enables selective retransmission of only the missing
 fragments by the sender.  The Total Fragments field is part of each
 fragment header, as defined in [[RFC7383]], Section 2.5.
 
 ** Sending Fragment Acknowledgment response
 
-The responder MAY send a Fragment Acknowledgment message after
-receiving one or more fragments of a request.  Similarly, the
-initiator MAY send a Fragment Acknowledgment message after receiving
-one or more fragments of a response.
+The responder MAY send a Fragment Acknowledgment notification after
+receiving one or more fragments of a request. See
+[[ike-intermediate-request]]  Similarly, the initiator MAY send a
+Fragment Acknowledgment notification after receiving one or more
+fragments of a response. See [[ike-intermediate-response]].
 
 ** Processing Fragment Acknowledgment Message
 
 Unlike typical IKEv2 exchanges, which complete when a response with the
-matching Message ID arrives, Fragment Acknowledgment Notifier do not
+matching Message ID arrives, Fragment Acknowledgment notification do not
 indicate completion of the exchange.  Instead, this message requests
 retransmission of the missing fragments and MUST NOT advance the IKEv2
-Message ID.
+Message ID counter.
 
 When the sender retransmits in response to a Fragment Acknowledgment,
 it SHOULD begin with the lowest missing fragment.  (See editor’s note
@@ -297,6 +306,9 @@ TBD
 ** RFC9000
 ** RFC9242
 ** I-D.ietf-ipsecme-ikev2-reliable-transport
+** I-D.nir-ipsecme-big-payload
+** I-D.smyslov-ipsecme-ikev2-extended-pld
+** I-D.tjhai-ikev2-beyond-64k-limit
 
 
 * Additional Stuff
