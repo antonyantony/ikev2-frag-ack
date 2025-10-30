@@ -291,11 +291,17 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 3.1.  Sending Fragment Acknowledgment response
 
-   The responder MAY send a Fragment Acknowledgment notification after
-   receiving one or more fragments of a request.  See Figure 1
-   Similarly, the initiator MAY send a Fragment Acknowledgment
-   notification after receiving one or more fragments of a response.
-   See Figure 2.
+   The responder MAY send a respsone to an exchange with Fragment
+   Acknowledgment notification after receiving one or more fragments of
+   a request.  See Figure 1.  Similarly, the initiator MAY send a
+   Fragment Acknowledgment notification after receiving one or more
+   fragments of a response.  See Figure 2.
+
+   [NOTE: When the initiator sends a FRAGMENT_ACK notification in
+   response to a fragmented response, it would need to set the IKE
+   header Response flag (R) bit.  This results in a "response to a
+   response" that uses the same Message ID, which is somewhat unusual in
+   IKEv2 message flow.  Need to be explicit.]
 
 3.2.  Processing Fragment Acknowledgment Message
 
@@ -311,7 +317,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 4.  Backward Compatibility
 
-   Receipt of a FRAGMENT_ACK notifier MUST NOT be interpreted as
+   Receipt of a FRAGMENT_ACK notification MUST NOT be interpreted as
    advancing the IKEv2 exchange state.  Instead it is signal to
    retransmit only the missing fragments.
 
@@ -323,12 +329,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
    *  Should we negotiate the support for FRAGMENT_ACK in IKE_INIT?
 
-   *  Congestion control mechanisms such as TCP slow start are out of
-      scope.
-
-   *  Path MTU discovery mentioned in [RFC7383] is currently ignored;
-      applicability TBD.
-
 
 
 
@@ -337,6 +337,12 @@ Antony, et al.             Expires 3 May 2026                   [Page 6]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
+
+   *  Congestion control mechanisms such as TCP slow start are out of
+      scope.
+
+   *  Path MTU discovery mentioned in [RFC7383] is currently ignored;
+      applicability TBD.
 
    *  When fragments exceed the path MTU, they may not be acknowledged,
       and the IKE state will not advance.  This will have re-fragmented
@@ -375,12 +381,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
    compatible with hardware offloading and inefficient for low-power or
    mobile platforms.
 
-   Antony's position is that using TCP for IKEv2 is not an ideal
-   solution for improving reliability.  While a QUIC-based approach
-   could provide reliable transport and congestion control when using
-   UDP, it would be complex for the limited goal of fragment
-   acknowledgment and controlled retransmission.  Other authors may have
-   different views on this topic.
 
 
 
@@ -393,6 +393,13 @@ Antony, et al.             Expires 3 May 2026                   [Page 7]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
+
+   Antony's position is that using TCP for IKEv2 is not an ideal
+   solution for improving reliability.  While a QUIC-based approach
+   could provide reliable transport and congestion control when using
+   UDP, it would be complex for the limited goal of fragment
+   acknowledgment and controlled retransmission.  Other authors may have
+   different views on this topic.
 
 5.3.  IV reuse when using AEAD
 
@@ -435,13 +442,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
-   [RFC7296]  Kaufman, C., Hoffman, P., Nir, Y., Eronen, P., and T.
-              Kivinen, "Internet Key Exchange Protocol Version 2
-              (IKEv2)", STD 79, RFC 7296, DOI 10.17487/RFC7296, October
-              2014, <https://www.rfc-editor.org/info/rfc7296>.
-
-
-
 
 
 
@@ -449,6 +449,11 @@ Antony, et al.             Expires 3 May 2026                   [Page 8]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
+
+   [RFC7296]  Kaufman, C., Hoffman, P., Nir, Y., Eronen, P., and T.
+              Kivinen, "Internet Key Exchange Protocol Version 2
+              (IKEv2)", STD 79, RFC 7296, DOI 10.17487/RFC7296, October
+              2014, <https://www.rfc-editor.org/info/rfc7296>.
 
    [RFC7383]  Smyslov, V., "Internet Key Exchange Protocol Version 2
               (IKEv2) Message Fragmentation", RFC 7383,
@@ -494,17 +499,17 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
               DOI 10.17487/RFC9000, May 2021,
               <https://www.rfc-editor.org/info/rfc9000>.
 
-   [RFC9242]  Smyslov, V., "Intermediate Exchange in the Internet Key
-              Exchange Protocol Version 2 (IKEv2)", RFC 9242,
-              DOI 10.17487/RFC9242, May 2022,
-              <https://www.rfc-editor.org/info/rfc9242>.
-
 
 
 Antony, et al.             Expires 3 May 2026                   [Page 9]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
+
+   [RFC9242]  Smyslov, V., "Intermediate Exchange in the Internet Key
+              Exchange Protocol Version 2 (IKEv2)", RFC 9242,
+              DOI 10.17487/RFC9242, May 2022,
+              <https://www.rfc-editor.org/info/rfc9242>.
 
    [RFC9370]  Tjhai, CJ., Tomlinson, M., Bartlett, G., Fluhrer, S., Van
               Geest, D., Garcia-Morchon, O., and V. Smyslov, "Multiple
@@ -531,11 +536,6 @@ Authors' Addresses
    Tobias Brunner
    codelabs GmbH
    Email: tobias@codelabs.ch
-
-
-
-
-
 
 
 
