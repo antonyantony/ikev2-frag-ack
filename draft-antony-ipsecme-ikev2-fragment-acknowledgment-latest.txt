@@ -5,9 +5,9 @@
 IP Security Maintenance and Extensions                         A. Antony
 Internet-Draft                                               S. Klassert
 Intended status: Standards Track                                 secunet
-Expires: 2 May 2026                                           T. Brunner
+Expires: 3 May 2026                                           T. Brunner
                                                            codelabs GmbH
-                                                         29 October 2025
+                                                         30 October 2025
 
 
                 IKEv2 Fragment Acknowledgment Extension
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 2 May 2026.
+   This Internet-Draft will expire on 3 May 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Antony, et al.             Expires 2 May 2026                   [Page 1]
+Antony, et al.             Expires 3 May 2026                   [Page 1]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Antony, et al.             Expires 2 May 2026                   [Page 2]
+Antony, et al.             Expires 3 May 2026                   [Page 2]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
@@ -127,6 +127,18 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
    Acknowledgment message, the initiator retransmits only the fragments
    that the responder reports as missing, reducing bandwidth consumption
    and latency overhead.
+
+   The current IKEv2 retransmission model is entirely initiator-driven:
+   only the initiator can decide when to retransmit a message after a
+   timeout [RFC7383].  The responder has no means to request
+   retransmission or to signal that it has received an incomplete set of
+   fragments.  This document proposes to extend that model slightly by
+   allowing the responder, upon receiving one or more fragments of an
+   IKE message and detecting that some fragments are missing, to send a
+   single, Fragemnet Acknowledgment message indicating the missing
+   fragments.  This message does not require a response and does not
+   advance the IKEv2 Message ID state.  And also this message MAY not be
+   retransmtted
 
 1.1.  Terminology
 
@@ -153,19 +165,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-Antony, et al.             Expires 2 May 2026                   [Page 3]
+Antony, et al.             Expires 3 May 2026                   [Page 3]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
@@ -221,7 +221,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
 
-Antony, et al.             Expires 2 May 2026                   [Page 4]
+Antony, et al.             Expires 3 May 2026                   [Page 4]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
@@ -277,20 +277,20 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
 
-Antony, et al.             Expires 2 May 2026                   [Page 5]
+Antony, et al.             Expires 3 May 2026                   [Page 5]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
 5.1.  New Exchange: IKE_FRAG_ACK
 
-   A possible design alternative is to define a new IKE exchange type,
+   A possible design alternative is to define a new IKEv2 exchange type,
    IKE_FRAG_ACK, which carries fragment acknowledgment information but
-   does not require a response.  Each IKE_FRAG_ACK message would include
+   does not have a response.  Each IKE_FRAG_ACK message would include
    the Exchange Type and Message ID of the IKE message it acknowledges.
-   This exchange has no response expected.  It one shot message.  This
-   approach would decouple fragment acknowledgment from existing IKE
-   exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.
+   This exchange has no response specified.  It is one shot message.
+   This approach would decouple fragment acknowledgment from existing
+   IKE exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.
 
 5.2.  Why not TCP
 
@@ -333,7 +333,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
 
 
-Antony, et al.             Expires 2 May 2026                   [Page 6]
+Antony, et al.             Expires 3 May 2026                   [Page 6]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         October 2025
 
@@ -389,4 +389,4 @@ Authors' Addresses
 
 
 
-Antony, et al.             Expires 2 May 2026                   [Page 7]
+Antony, et al.             Expires 3 May 2026                   [Page 7]
