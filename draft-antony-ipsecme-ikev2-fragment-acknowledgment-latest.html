@@ -1432,7 +1432,10 @@ retransmtted<a href="#section-1-6" class="pilcrow">¶</a></p>
         <h3 id="name-terminology">
 <a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
         </h3>
-<p id="section-1.1-1">This document uses the following terms defined in <span>[<a href="#RFC7296" class="cite xref">RFC7296</a>]</span>:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-1">This document uses the following terms defined in <span>[<a href="#RFC7296" class="cite xref">RFC7296</a>]</span>:
+IKE_AUTH, CREATE_CHILD_SA.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2">This document uses the following terms defined in <span>[<a href="#RFC9242" class="cite xref">RFC9242</a>]</span>:
+IKE_INTERMEDIATE.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
 </section>
 </section>
 <section id="section-2">
@@ -1592,14 +1595,18 @@ exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.<a href="#sectio
         </h3>
 <p id="section-5.2-1">Reliable transport for IKEv2 over TCP, as proposed in
 <span>[<a href="#I-D.ietf-ipsecme-ikev2-reliable-transport" class="cite xref">I-D.ietf-ipsecme-ikev2-reliable-transport</a>]</span>, adds implementation
-complexity and resource cost. It requires maintaining both a TCP and
+complexity and resource cost.  It requires maintaining both TCP and
 UDP sockets, increasing energy use on low-powered devices.  Using TCP
 for IKE while keeping ESP in UDP mode through NAT gateways introduces
 additional state and resource requirements.  It may also be less
-friendly to hardware offloading and inefficient for low-power or
-mobile devices. Antony personally is strong believer: TCP is not the best
-solution here:) While QUIC would be overdoing it just get Fragment ack
-and congestion control.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+compatible with hardware offloading and inefficient for low-power or
+mobile platforms.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-2">Antony's position is that using TCP for IKEv2 is not an ideal
+solution for improving reliability.  While a QUIC-based approach could
+provide reliable transport and congestion control when using UDP,
+it would be complex for the limited goal of fragment acknowledgment
+and controlled retransmission.  Other authors may have different views
+on this topic.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
 </section>
 </section>
 <section id="section-6">
@@ -1649,6 +1656,10 @@ and congestion control.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
 <dt id="RFC9000">[RFC9000]</dt>
       <dd>
 <span class="refAuthor">Iyengar, J., Ed.</span> and <span class="refAuthor">M. Thomson, Ed.</span>, <span class="refTitle">"QUIC: A UDP-Based Multiplexed and Secure Transport"</span>, <span class="seriesInfo">RFC 9000</span>, <span class="seriesInfo">DOI 10.17487/RFC9000</span>, <time datetime="2021-05" class="refDate">May 2021</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9000">https://www.rfc-editor.org/info/rfc9000</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9242">[RFC9242]</dt>
+      <dd>
+<span class="refAuthor">Smyslov, V.</span>, <span class="refTitle">"Intermediate Exchange in the Internet Key Exchange Protocol Version 2 (IKEv2)"</span>, <span class="seriesInfo">RFC 9242</span>, <span class="seriesInfo">DOI 10.17487/RFC9242</span>, <time datetime="2022-05" class="refDate">May 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9242">https://www.rfc-editor.org/info/rfc9242</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9370">[RFC9370]</dt>
     <dd>
