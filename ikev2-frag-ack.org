@@ -87,7 +87,10 @@ retransmtted
 ** Terminology
 
 This document uses the following terms defined in [[RFC7296]]:
+IKE_AUTH, CREATE_CHILD_SA.
 
+This document uses the following terms defined in [[RFC9242]]:
+IKE_INTERMEDIATE.
 
 * Requirements Language
 
@@ -213,15 +216,19 @@ exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.
 ** Why not TCP
 Reliable transport for IKEv2 over TCP, as proposed in
 [[I-D.ietf-ipsecme-ikev2-reliable-transport]], adds implementation
-complexity and resource cost. It requires maintaining both a TCP and
+complexity and resource cost.  It requires maintaining both TCP and
 UDP sockets, increasing energy use on low-powered devices.  Using TCP
 for IKE while keeping ESP in UDP mode through NAT gateways introduces
 additional state and resource requirements.  It may also be less
-friendly to hardware offloading and inefficient for low-power or
-mobile devices. Antony personally is strong believer: TCP is not the best
-solution here:) While QUIC would be overdoing it just get Fragment ack
-and congestion control.
+compatible with hardware offloading and inefficient for low-power or
+mobile platforms.
 
+Antony's position is that using TCP for IKEv2 is not an ideal
+solution for improving reliability.  While a QUIC-based approach could
+provide reliable transport and congestion control when using UDP,
+it would be complex for the limited goal of fragment acknowledgment
+and controlled retransmission.  Other authors may have different views
+on this topic.
 
 * Acknowledgments
 
@@ -241,6 +248,7 @@ TBD
 * Informative References
 ** RFC9370
 ** RFC9000
+** RFC9242
 ** I-D.ietf-ipsecme-ikev2-reliable-transport
 
 
