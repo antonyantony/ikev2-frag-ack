@@ -1410,10 +1410,9 @@ IKEv2 <span>[<a href="#RFC9370" class="cite xref">RFC9370</a>]</span>, IKE peers
 messages than those produced by classical algorithms, often tens of
 kilobytes and sometimes approaching 64 kilobytes in size.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <p id="section-1-3">There are also several proposals to extend IKEv2 beyond the 64-kilobyte
-payload limitation
-([I-D.nir-ipsecme-big-payload],
- [I-D.smyslov-ipsecme-ikev2-extended-pld],
- [I-D.tjhai-ikev2-beyond-64k-limit]).<a href="#section-1-3" class="pilcrow">¶</a></p>
+payload limitation <span>[<a href="#I-D.nir-ipsecme-big-payload" class="cite xref">I-D.nir-ipsecme-big-payload</a>]</span>,
+ <span>[<a href="#I-D.smyslov-ipsecme-ikev2-extended-pld" class="cite xref">I-D.smyslov-ipsecme-ikev2-extended-pld</a>]</span>,
+ <span>[<a href="#I-D.tjhai-ikev2-beyond-64k-limit" class="cite xref">I-D.tjhai-ikev2-beyond-64k-limit</a>]</span>.<a href="#section-1-3" class="pilcrow">¶</a></p>
 <p id="section-1-4">In the current IKEv2 fragmentation mechanism <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, when one or
 more fragments are lost, the sender retransmits all fragments of the
 message.  Practical experience shows that this can lead to significant
@@ -1423,7 +1422,7 @@ IKE SA even after dozens of retransmissions.  This document proposes a
 fragment acknowledgment mechanism for IKEv2, similar in concept to
 acknowledgment schemes used in QUIC <span>[<a href="#RFC9000" class="cite xref">RFC9000</a>]</span>.<a href="#section-1-4" class="pilcrow">¶</a></p>
 <p id="section-1-5">When both the responder and initiator support the new IKEv2 Fragment
-Acknowledgment message, the initiator retransmits only the fragments
+Acknowledgment, the initiator retransmits only the fragments
 that the responder reports as missing, reducing bandwidth consumption
 and latency overhead.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <p id="section-1-6">The current IKEv2 retransmission model is entirely initiator-driven:
@@ -1431,12 +1430,17 @@ only the initiator can decide when to retransmit a message after a
 timeout <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>. The responder has no means to request
 retransmission or to signal that it has received an incomplete set of
 fragments.  This document proposes to extend that model slightly by
-allowing the responder, upon receiving one or more fragments of an
-IKE message and detecting that some fragments are missing, to send a
-single, Fragment Acknowledgment Notifier indicating the missing
+allowing the responder, upon receiving one or more fragments of an<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">IKE message and detecting that some fragments are missing, to send a
+IKEv2 response, of the same excange with Fragment Acknowledgment
+notification indicating the missing fragments. This message is sent
+with the IKEv2 Response flag set.  It does not require a response,
+does not advance the IKEv2 Message ID state.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">IKE message and detecting that some fragments are missing, to send a
+single, Fragment Acknowledgment notification indicating the missing
 fragments.  This message is sent  with IKEv2 flag Response and
 do not require a response and it does not advance the IKEv2 Message
-ID state. And also this message MAY not be retransmitted<a href="#section-1-6" class="pilcrow">¶</a></p>
+ID state. And also this message MAY not be retransmitted<a href="#section-1-8" class="pilcrow">¶</a></p>
 <section id="section-1.1">
         <h3 id="name-terminology">
 <a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
@@ -1552,30 +1556,32 @@ ACK etc.                /
           <p id="section-3-5.4.1">Pairs of ACK # and Range<a href="#section-3-5.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-3-6">The payload enumerates  a set of received fragments for a single IKE
-message. ACK # indicates highest fragment received from from Total Fragments.
-And thr Range # indicate contiguous fragments acknowledging.
+<p id="section-3-6">The payload enumerates  a set of received fragments for a single IKE<a href="#section-3-6" class="pilcrow">¶</a></p>
+<p id="section-3-7">message. The ACK # field indicates the highest fragment received from
+the total number of fragments, and the Range # field indicates the
+contiguous range of acknowledged fragments.
 It enables selective retransmission of only the missing
 fragments by the sender.  The Total Fragments field is part of each
-fragment header, as defined in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, Section 2.5.<a href="#section-3-6" class="pilcrow">¶</a></p>
+fragment header, as defined in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, Section 2.5.<a href="#section-3-7" class="pilcrow">¶</a></p>
 <section id="section-3.1">
         <h3 id="name-sending-fragment-acknowledg">
 <a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-sending-fragment-acknowledg" class="section-name selfRef">Sending Fragment Acknowledgment response</a>
         </h3>
-<p id="section-3.1-1">The responder MAY send a Fragment Acknowledgment message after
-receiving one or more fragments of a request.  Similarly, the
-initiator MAY send a Fragment Acknowledgment message after receiving
-one or more fragments of a response.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-1">The responder MAY send a Fragment Acknowledgment notification after
+receiving one or more fragments of a request. See
+<a href="#ike-intermediate-request" class="auto internal xref">Figure 1</a>  Similarly, the initiator MAY send a
+Fragment Acknowledgment notification after receiving one or more
+fragments of a response. See <a href="#ike-intermediate-response" class="auto internal xref">Figure 2</a>.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
 </section>
 <section id="section-3.2">
         <h3 id="name-processing-fragment-acknowl">
 <a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-processing-fragment-acknowl" class="section-name selfRef">Processing Fragment Acknowledgment Message</a>
         </h3>
 <p id="section-3.2-1">Unlike typical IKEv2 exchanges, which complete when a response with the
-matching Message ID arrives, Fragment Acknowledgment Notifier do not
+matching Message ID arrives, Fragment Acknowledgment notification do not
 indicate completion of the exchange.  Instead, this message requests
 retransmission of the missing fragments and MUST NOT advance the IKEv2
-Message ID.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+Message ID counter.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
 <p id="section-3.2-2">When the sender retransmits in response to a Fragment Acknowledgment,
 it SHOULD begin with the lowest missing fragment.  (See editor’s note
 below regarding potential use of INFORMATIONAL exchanges.)<a href="#section-3.2-2" class="pilcrow">¶</a></p>
@@ -1744,6 +1750,18 @@ the First Fragment?<a href="#section-5.4-1" class="pilcrow">¶</a></p>
 <dt id="I-D.ietf-ipsecme-ikev2-reliable-transport">[I-D.ietf-ipsecme-ikev2-reliable-transport]</dt>
       <dd>
 <span class="refAuthor">Smyslov, V.</span> and <span class="refAuthor">T. Reddy.K</span>, <span class="refTitle">"Separate Transports for IKE and ESP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-ipsecme-ikev2-reliable-transport-00</span>, <time datetime="2025-10-06" class="refDate">6 October 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-ipsecme-ikev2-reliable-transport-00">https://datatracker.ietf.org/doc/html/draft-ietf-ipsecme-ikev2-reliable-transport-00</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.nir-ipsecme-big-payload">[I-D.nir-ipsecme-big-payload]</dt>
+      <dd>
+<span class="refAuthor">Nir, Y.</span>, <span class="refTitle">"A Larger Internet Key Exchange version 2 (IKEv2) Payload"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-nir-ipsecme-big-payload-06</span>, <time datetime="2025-09-14" class="refDate">14 September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-nir-ipsecme-big-payload-06">https://datatracker.ietf.org/doc/html/draft-nir-ipsecme-big-payload-06</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.smyslov-ipsecme-ikev2-extended-pld">[I-D.smyslov-ipsecme-ikev2-extended-pld]</dt>
+      <dd>
+<span class="refAuthor">Smyslov, V.</span>, <span class="refTitle">"Extended IKEv2 Payload Format"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-smyslov-ipsecme-ikev2-extended-pld-01</span>, <time datetime="2023-03-06" class="refDate">6 March 2023</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-smyslov-ipsecme-ikev2-extended-pld-01">https://datatracker.ietf.org/doc/html/draft-smyslov-ipsecme-ikev2-extended-pld-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.tjhai-ikev2-beyond-64k-limit">[I-D.tjhai-ikev2-beyond-64k-limit]</dt>
+      <dd>
+<span class="refAuthor">Tjhai, C.</span>, <span class="refAuthor">Heider, T.</span>, and <span class="refAuthor">V. Smyslov</span>, <span class="refTitle">"Beyond 64KB Limit of IKEv2 Payloads"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-tjhai-ikev2-beyond-64k-limit-03</span>, <time datetime="2022-07-28" class="refDate">28 July 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-tjhai-ikev2-beyond-64k-limit-03">https://datatracker.ietf.org/doc/html/draft-tjhai-ikev2-beyond-64k-limit-03</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9000">[RFC9000]</dt>
       <dd>
