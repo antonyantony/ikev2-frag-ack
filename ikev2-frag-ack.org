@@ -23,16 +23,18 @@
 #+RFC_WORKGROUP: IP Security Maintenance and Extensions
 
 #+begin_abstract
-This document specifies one Notify Message Status Types for the
-Internet Key Exchange Protocol Version 2 (IKEv2) to support
-acknowledgment of IKEv2 message Fragments over UDP. The mechanism
-allows the receiving peer to confirm reception of individual
-fragments during the IKE_AUTH exchange and subsequent exchanges. As
-a result, the IKEv2 initiator needs to retransmit only the fragments
-that the responder reports as missing.  This improves reliability
-when large IKE messages are exchanged, such as those containing
-post-quantum cryptography (PQC) payloads, and reduces retransmission
-overhead, thereby improving IKEv2 round-trip times in lossy networks.
+This document specifies an extension to the Internet Key Exchange
+Protocol Version 2 (IKEv2) that enables acknowledgment of IKEv2
+message fragments over UDP.  The mechanism allows an IKE peer to
+confirm reception of individual fragments during the IKE_AUTH exchange
+and any subsequent exchanges where IKEv2 Fragmentation is used.
+Support for this feature is negotiated using a new Notify Message
+Status Type during IKE_SA_INIT, and fragment acknowledgments are
+exchanged using a separate Notification payload.  This extension
+improves reliability when large IKE messages are exchanged, such as
+those containing post-quantum cryptography (PQC) payloads, and reduces
+retransmission overhead, thereby improving IKEv2 round-trip times in
+lossy network conditions.
 #+end_abstract
 
 #+RFC_KEYWORDS: ("IPsec" "ESP" "IKEv2")
@@ -78,7 +80,7 @@ fragments.  This document proposes to extend that model slightly by
 allowing the responder, upon receiving one or more fragments of an
 
 IKE message and detecting that some fragments are missing, to send a
-IKEv2 response, of the same excange with Fragment Acknowledgment
+IKEv2 response, of the same exchange with Fragment Acknowledgment
 notification indicating the missing fragments. This message is sent
 with the IKEv2 Response flag set.  It does not require a response,
 does not advance the IKEv2 Message ID state.
@@ -92,10 +94,13 @@ ID state. And also this message MAY not be retransmitted
 ** Terminology
 
 This document uses the following terms defined in [[RFC7296]]:
-IKE_INIT, IKE_AUTH, CREATE_CHILD_SA,  SK_e,  SK_a.
+IKE_SA_INIT, IKE_AUTH, CREATE_CHILD_SA, SK_e, SK_a.
 
-This document uses the following terms defined in [[RFC9242]]:
+This document also uses the following terms defined in [[RFC9242]]:
 IKE_INTERMEDIATE.
+
+This document also uses the following terms defined in [[RFC7383]]:
+IKEv2 Fragmentation, Total Fragments,
 
 * Requirements Language
 
@@ -170,35 +175,36 @@ ACK etc.                /
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  |         ACK #2 (16)           |  Range #2                     |
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |           ..............................                      |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 #+end_src
 
 - Protocol ID (1 octet) - MUST be 0.  MUST be ignored if not 0.
 - SPI Size (1 octet) - MUST be 0.  MUST be ignored if not 0.
-- Notify Status Message Type value (2 octets) - set to [TBD1].
+- Notify Status Message Type value (2 octets) - set to TBD2.
 - Pairs of ACK # and Range
 
 The payload enumerates  a set of received fragments for a single IKE
-
 message. The ACK # field indicates the highest fragment received from
 the total number of fragments, and the Range # field indicates the
 contiguous range of acknowledged fragments.
 It enables selective retransmission of only the missing
-fragments by the sender.  The Total Fragments field is part of each
+fragments by the sender. The Total Fragments field is part of each
 fragment header, as defined in [[RFC7383]], Section 2.5.
 
 ** Sending Fragment Acknowledgment response
 
-The responder MAY send a respsone to an exchange with Fragment
+The responder MAY send a response to an exchange with Fragment
 Acknowledgment notification after receiving one or more fragments
 of a request. See [[ike-intermediate-request]]. Similarly, the
 initiator MAY send a Fragment Acknowledgment notification after
 receiving one or more fragments of a response. See [[ike-intermediate-response]].
 
-[NOTE: When the initiator sends a FRAGMENT_ACK notification in
+When the initiator sends a FRAGMENT_ACK notification in
 response to a fragmented response, it would need to set the IKE
-header Response flag (R) bit.  This results in a
+header Response flag (R) bit. This results in a
 "response to a response" that uses the same Message ID, which is
-somewhat unusual in IKEv2 message flow. Need to be explicit.]
+somewhat unusual in IKEv2 message flow. [NOTE: Other solutions?]
 
 ** Processing Fragment Acknowledgment Message
 
@@ -212,28 +218,48 @@ When the sender retransmits in response to a Fragment Acknowledgment,
 it SHOULD begin with the lowest missing fragment.  (See editor’s note
 below regarding potential use of INFORMATIONAL exchanges.)
 
+* Negotiation
+The use of Fragment Acknowledgment MUST be negotiated during the
+IKE_SA_INIT exchange.  Both the initiator and the responder indicate
+support for this extension by including the
+FRAGMENT_ACK_SUPPORTED Notify Message Status Type (value TBD1)
+in the IKE_SA_INIT request and response messages.  The presence of
+this notification in both directions confirms that both peers support
+the Fragment Acknowledgment mechanism.
+
+If either peer omits the FRAGMENT_ACK_SUPPORTED notification in
+IKE_SA_INIT the extension MUST NOT be used in subsequent exchanges
+within that IKE SA.
+
+The FRAGMENT_ACK_SUPPORTED notification follows the general rules for
+Notify Message Status Types as specified in [[RFC7296]], Section 3.10.
+It does not include any data in the Notification Data field.
+
 * Backward Compatibility
 
 Receipt of a FRAGMENT_ACK notification MUST NOT be interpreted as
-advancing the IKEv2 exchange state. Instead it is signal to retransmit
-only the missing fragments.
+advancing the IKEv2 exchange state. Instead it is signal to retransmit only the missing fragments.
 
-Implementations that do not recognize this payload will ignore it and
-continue using full-message retransmission, preserving backward
-compatibility.
+* Operational Considerations
+
+The FRAGMENT_ACK notifcation message SHOULD NOT be large enough to cause
+path-MTU issues. If the number of acknowledged fragments results in a
+payload that approaches the path MTU or IKEv2 Fragemnet size
+, the sender MAY limit the number of fragment ranges included in
+a single message and send multiple FRAGMENT_ACK messages if
+necessary. Implementations SHOULD ensure that each FRAGMENT_ACK
+message fits within a single UDP datagram to avoid IP-layer
+fragmentation.
 
 * Editors Notes Open Issues
 
-- Should we negotiate the  support for FRAGMENT_ACK in IKE_INIT?
-- Congestion control mechanisms such as TCP slow start are out of
-  scope.
 - Path MTU discovery mentioned in [[RFC7383]] is currently ignored;
   applicability TBD.
 - When fragments exceed the path MTU, they may not be acknowledged,
   and the IKE state will not advance. This will have re-fragmented
-	as in [[RFC7383]]
-- Why not use IKEv2 INFORMATIONAL? That would adhere more to IKEv2.
-  However, every INFORMATIONAL need a response. And if there is no
+	as specified in [[RFC7383]]
+- Why not use IKEv2 INFORMATIONAL? That may adhere more to IKEv2.
+  However, every INFORMATIONAL needs a response. And if there is no
   response the INFORMATIONAL message might be retransmitted this would
   lead to complex unpredictable retransmissions.
 - Why not make new IKEv2 exchange without a response? Instead of
@@ -264,10 +290,11 @@ compatible with hardware offloading and inefficient for low-power or
 mobile platforms.
 
 Antony's position is that using TCP for IKEv2 is not an ideal
-solution for improving reliability.  While a QUIC-based approach could
-provide reliable transport and congestion control when using UDP,
-it would be complex for the limited goal of fragment acknowledgment
-and controlled retransmission.  Other authors may have different views
+solution for improving reliability.  While a UDP based ideas
+borrowed from QUIC-based could provide reliable transport and
+may be one day congestion control!
+It would be complex for the limited goal of fragment acknowledgment
+and selective retransmission. Other authors may have different views
 on this topic.
 
 ** IV reuse when using AEAD
@@ -279,7 +306,7 @@ this would lead to resuse of IV. Which MUST be avoided.
 
 ** Discrepancy with RFC 7383 (IKEv2 fragmentation):
 
-With FRAGMENT_ACK respone, a retransmission would not include the first
+With FRAGMENT_ACK response, a retransmission would not include the first
 fragment as required by [[RFC7383]].  May be add retransmissions should include
 the First Fragment?
 
@@ -290,7 +317,9 @@ This document defines one new registration for the IANA
 
 |Value   | Notify Message Status Type  | Reference       |
 |--------|-----------------------------|-----------------|
-| [TBD1] | FRAGMENT_ACK                | [this document] |
+| [TBD1] | FRAGMENT_ACK_SUPPORTED      | [this document] |
+|--------|-----------------------------|-----------------|
+| [TBD2] | FRAGMENT_ACK                | [this document] |
 
 * Acknowledgments
 
