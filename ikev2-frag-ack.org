@@ -210,7 +210,7 @@ retransmission of the missing fragments and MUST NOT advance the IKEv2
 Message ID counter.
 
 When the sender retransmits in response to a Fragment Acknowledgment,
-it SHOULD begin with the lowest missing fragment.  (See editor’s note
+it SHOULD begin with the lowest missing fragment. (See editor’s note
 below regarding potential use of INFORMATIONAL exchanges.)
 
 * Negotiation
@@ -246,6 +246,20 @@ necessary. Implementations SHOULD ensure that each FRAGMENT_ACK
 message fits within a single UDP datagram to avoid IP-layer
 fragmentation.
 
+** When to Send a Fragment Acknowledgment
+
+Since the IKEv2 retransmission model is sender-driven, the responder
+SHOULD be conservative about when to send the first FRAGMENT_ACK
+message.  A responder MAY send a FRAGMENT_ACK only after it detects
+that the sender has retransmitted at least one fragment of the same
+message, indicating that one or more fragments were likely lost.  In
+general, an IKE peer sending a FRAGMENT_ACK message SHOULD do so only
+when it can provide useful information about missing fragments, in
+order to avoid unnecessary traffic and message processing overhead and
+to remain consistent with the sender-driven retransmission model of
+IKEv2. However, with large number of fragments this may take long
+time to converge.
+
 * Editors Notes Open Issues
 
 - Path MTU discovery mentioned in [[RFC7383]] is currently ignored;
@@ -255,14 +269,20 @@ fragmentation.
 	as specified in [[RFC7383]]
 - Why not use IKEv2 INFORMATIONAL? That may adhere more to IKEv2.
   However, every INFORMATIONAL needs a response. And if there is no
-  response the INFORMATIONAL message might be retransmitted this would
-  lead to complex unpredictable retransmissions.
+  response the INFORMATIONAL message MUST be retransmitted to adance
+	IKE state. This would lead to complex unpredictable retransmissions.
 - Why not make new IKEv2 exchange without a response? Instead of
   responding to the same : responding with IKE_AUTH or IKE_INTERMEDIATE
 	this is worth considering. New Exchange IKE_FRAG_ACK : which has no
 	response. The message will carry IKE exchange and message ID it is
 	responding to. This might be bigger change. This will bigger protocol
 	change.
+
+- Should every acknowledgement sent by an IKE peer MUST include the
+  entire state of the buffer. That is, acknowledgements are cumulative.
+  However, when the entire state does not conservately fit into one packt
+  FRAGMENT_ACK message would be partial.
+
 
 ** New Exchange: IKE_FRAG_ACK
 
