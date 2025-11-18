@@ -11,7 +11,7 @@ Expires: 22 May 2026                                       codelabs GmbH
 
 
                 IKEv2 Fragment Acknowledgment Extension
-         draft-antony-ipsecme-ikev2-fragment-acknowledgment-02
+         draft-antony-ipsecme-ikev2-fragment-acknowledgment-01
 
 Abstract
 
