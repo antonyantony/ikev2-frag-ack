@@ -11,6 +11,11 @@ The latest version of the draft in HTML format is at:
 # above URL is replaced by .github/workflows/generate.yaml
 # sed -i "s|klassert.github.io/eesp-ikev2|$USERNAME.github.io/$REPO_NAME|g"
 
+* IETF Datatracker Copy of IKEv2 Fragment Acknowledgment Extension
+- [[https://datatracker.ietf.org/doc/draft-antony-ipsecme-ikev2-fragment-acknowledgment/][IETF Datatracker: draft-antony-ipsecme-ikev2-fragment-acknowledgment]]
+
+- [[https://author-tools.ietf.org/api/iddiff?doc_1=draft-antony-ipsecme-ikev2-fragment-acknowledgment&url_2=https://raw.githubusercontent.com/antonyantony/ikev2-frag-ack/refs/heads/gh-pages/draft-antony-ipsecme-ikev2-fragment-acknowledgment-latest.txt][Diff with latest submission]]
+
 * Command Line Usage
 
 Formatted text,HTML and xml versions of the draft can be built using *make*.
