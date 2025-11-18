@@ -10,6 +10,7 @@
 #+RFC_STREAM: IETF
 #+RFC_XML_VERSION: 3
 #+RFC_CONSENSUS: true
+#+RFC_UPDATES: RFC7383
 
 #+TITLE: IKEv2 Fragment Acknowledgment Extension
 #+RFC_SHORT_TITLE: IKEv2 Fragment Acknowledgment
@@ -319,12 +320,22 @@ when using AEAD.  Both the request and the response use the same message
 ID as the actual messages more than once. If the IKEv2 Message ID is
 used as IV this would lead to resuse of IV. Which MUST be avoided.
 
-** Discrepancy with RFC 7383 (IKEv2 fragmentation):
+** Update to RFC7383
+[[RFC7383]] specifies that when an IKE message is retransmitted, all
+fragments of that message, including the first fragment, MUST be
+retransmitted.  The selective retransmission enabled by the
+FRAGMENT_ACK mechanism defined in this document relaxes that
+requirement by allowing the sender to retransmit only the fragments
+that the peer identifies as missing.  Accordingly, this document
+updates RFC 7383 by modifying the retransmission behavior defined.
 
 With FRAGMENT_ACK response, a retransmission would not include the first
 fragment as required by [[RFC7383]].  May be add retransmissions
 should include the First Fragment? This I.D would update
 [[RFC7383]].
+
+The Section 4 of [[RFC7383]] should be updated to allow fragment
+acknowledgment.
 
 * IANA Considerations
 
