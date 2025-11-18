@@ -4,10 +4,10 @@
 
 IP Security Maintenance and Extensions                         A. Antony
 Internet-Draft                                               S. Klassert
-Intended status: Standards Track                                 secunet
-Expires: 9 May 2026                                           T. Brunner
-                                                           codelabs GmbH
-                                                         5 November 2025
+Updates: RFC7383 (if approved)                                   secunet
+Intended status: Standards Track                              T. Brunner
+Expires: 22 May 2026                                       codelabs GmbH
+                                                        18 November 2025
 
 
                 IKEv2 Fragment Acknowledgment Extension
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 May 2026.
+   This Internet-Draft will expire on 22 May 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Antony, et al.             Expires 9 May 2026                   [Page 1]
+Antony, et al.             Expires 22 May 2026                  [Page 1]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
@@ -80,10 +80,10 @@ Table of Contents
    6.  Operational Considerations  . . . . . . . . . . . . . . . . .   7
      6.1.  When to Send a Fragment Acknowledgment  . . . . . . . . .   7
    7.  Editors Notes Open Issues . . . . . . . . . . . . . . . . . .   7
-     7.1.  New Exchange: IKE_FRAG_ACK  . . . . . . . . . . . . . . .   8
-     7.2.  Why not TCP . . . . . . . . . . . . . . . . . . . . . . .   8
+     7.1.  New Exchange: IKE_FRAG_ACK? . . . . . . . . . . . . . . .   8
+     7.2.  Why not TCP?  . . . . . . . . . . . . . . . . . . . . . .   8
      7.3.  IV reuse when using AEAD  . . . . . . . . . . . . . . . .   8
-     7.4.  Discrepancy with RFC 7383 (IKEv2 fragmentation):  . . . .   9
+     7.4.  Update to RFC7383 . . . . . . . . . . . . . . . . . . . .   9
    8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
    9.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   9
    10. Security Considerations . . . . . . . . . . . . . . . . . . .   9
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Antony, et al.             Expires 9 May 2026                   [Page 2]
+Antony, et al.             Expires 22 May 2026                  [Page 2]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
@@ -165,7 +165,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
 
 
-Antony, et al.             Expires 9 May 2026                   [Page 3]
+Antony, et al.             Expires 22 May 2026                  [Page 3]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
@@ -221,7 +221,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
 
 
-Antony, et al.             Expires 9 May 2026                   [Page 4]
+Antony, et al.             Expires 22 May 2026                  [Page 4]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
@@ -277,7 +277,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
 
 
-Antony, et al.             Expires 9 May 2026                   [Page 5]
+Antony, et al.             Expires 22 May 2026                  [Page 5]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
@@ -333,7 +333,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
 
 
-Antony, et al.             Expires 9 May 2026                   [Page 6]
+Antony, et al.             Expires 22 May 2026                  [Page 6]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
@@ -389,7 +389,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
 
 
-Antony, et al.             Expires 9 May 2026                   [Page 7]
+Antony, et al.             Expires 22 May 2026                  [Page 7]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
@@ -406,7 +406,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
       cumulative.  However, when the entire state does not conservately
       fit into one packt FRAGMENT_ACK message would be partial.
 
-7.1.  New Exchange: IKE_FRAG_ACK
+7.1.  New Exchange: IKE_FRAG_ACK?
 
    A possible design alternative is to define a new IKEv2 exchange type,
    IKE_FRAG_ACK, which carries fragment acknowledgment information but
@@ -416,7 +416,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
    This approach would decouple fragment acknowledgment from existing
    IKE exchanges such as IKE_AUTH, IKE_INTERMEDIATE or CREATE_CHILD_SA.
 
-7.2.  Why not TCP
+7.2.  Why not TCP?
 
    Reliable transport for IKEv2 over TCP, as proposed in
    [I-D.ietf-ipsecme-ikev2-reliable-transport], adds implementation
@@ -438,23 +438,34 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
    One potential implementation issue I can see with these ACKs is the
    IV when using AEAD.  Both the request and the response use the same
-   message ID as the actual messages more than once.  If the MID is used
-   as IV this would lead to resuse of IV.  Which MUST be avoided.
+   message ID as the actual messages more than once.  If the IKEv2
+   Message ID is used as IV this would lead to resuse of IV.  Which MUST
+   be avoided.
 
 
 
 
-
-Antony, et al.             Expires 9 May 2026                   [Page 8]
+Antony, et al.             Expires 22 May 2026                  [Page 8]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
 
 
-7.4.  Discrepancy with RFC 7383 (IKEv2 fragmentation):
+7.4.  Update to RFC7383
+
+   [RFC7383] specifies that when an IKE message is retransmitted, all
+   fragments of that message, including the first fragment, MUST be
+   retransmitted.  The selective retransmission enabled by the
+   FRAGMENT_ACK mechanism defined in this document relaxes that
+   requirement by allowing the sender to retransmit only the fragments
+   that the peer identifies as missing.  Accordingly, this document
+   updates RFC 7383 by modifying the retransmission behavior defined.
 
    With FRAGMENT_ACK response, a retransmission would not include the
    first fragment as required by [RFC7383].  May be add retransmissions
-   should include the First Fragment?
+   should include the First Fragment?  This I.D would update [RFC7383].
+
+   The Section 4 of [RFC7383] should be updated to allow fragment
+   acknowledgment.
 
 8.  IANA Considerations
 
@@ -486,6 +497,15 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
+
+
+
+
+Antony, et al.             Expires 22 May 2026                  [Page 9]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
+
+
    [RFC7296]  Kaufman, C., Hoffman, P., Nir, Y., Eronen, P., and T.
               Kivinen, "Internet Key Exchange Protocol Version 2
               (IKEv2)", STD 79, RFC 7296, DOI 10.17487/RFC7296, October
@@ -495,16 +515,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
               (IKEv2) Message Fragmentation", RFC 7383,
               DOI 10.17487/RFC7383, November 2014,
               <https://www.rfc-editor.org/info/rfc7383>.
-
-
-
-
-
-
-Antony, et al.             Expires 9 May 2026                   [Page 9]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
-
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
@@ -545,22 +555,17 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
               DOI 10.17487/RFC9000, May 2021,
               <https://www.rfc-editor.org/info/rfc9000>.
 
+
+
+Antony, et al.             Expires 22 May 2026                 [Page 10]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
+
+
    [RFC9242]  Smyslov, V., "Intermediate Exchange in the Internet Key
               Exchange Protocol Version 2 (IKEv2)", RFC 9242,
               DOI 10.17487/RFC9242, May 2022,
               <https://www.rfc-editor.org/info/rfc9242>.
-
-
-
-
-
-
-
-
-Antony, et al.             Expires 9 May 2026                  [Page 10]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        November 2025
-
 
    [RFC9370]  Tjhai, CJ., Tomlinson, M., Bartlett, G., Fluhrer, S., Van
               Geest, D., Garcia-Morchon, O., and V. Smyslov, "Multiple
@@ -608,9 +613,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-
-Antony, et al.             Expires 9 May 2026                  [Page 11]
+Antony, et al.             Expires 22 May 2026                 [Page 11]
