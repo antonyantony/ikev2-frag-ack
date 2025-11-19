@@ -80,7 +80,7 @@ retransmission or to signal that it has received an incomplete set of
 fragments.  This document proposes to extend that model slightly by
 allowing the responder, upon receiving one or more fragments of an
 
-IKE message and detecting that some fragments are missing, to send a
+IKE message and detecting that some fragments are missing, to send an
 IKEv2 response, of the same exchange with Fragment Acknowledgment
 notification indicating the missing fragments. This message is sent
 with the IKEv2 Response flag set.  It does not require a response,
@@ -179,14 +179,13 @@ ACK etc.                /
 - Notify Status Message Type value (2 octets) - set to TBD2.
 - Pairs of ACK # and Range
 
-The payload enumerates  a set of received fragments for a single IKE
-message. The ACK # field indicates the start with lowest fragment
-number received.  And the Missing # field indicates the
-contiguous range of missing fragments.
-It enables selective retransmission of only the missing
-fragments by the sender. The Total Fragments field is part of each
-fragment header, as defined in [[RFC7383]], Section 2.5.
-e.g 4,4 7,10 and so on.
+The payload enumerates the set of missing fragments for a single IKE
+message. The ACK # field identifies the lowest-numbered missing
+fragment, and the Missing # field specifies the contiguous range of
+additional missing fragments.  This allows the sender to selectively
+retransmit only those fragments that have not been received.  The
+Total Fragments field is present in each fragment header, as defined
+in [[RFC7383]], Section 2.5.  For example: 4,4; 7,10; and so on.
 
 ** Sending Fragment Acknowledgment response
 
@@ -196,11 +195,13 @@ of a request. See [[ike-intermediate-request]]. Similarly, the
 initiator MAY send a Fragment Acknowledgment notification after
 receiving one or more fragments of a response. See [[ike-intermediate-response]].
 
-When the initiator sends a FRAGMENT_ACK notification in
-response to a fragmented response, it would need to set the IKE
-header Response flag (R) bit. This results in a
-"response to a response" that uses the same Message ID, which is
-somewhat unusual in IKEv2 message flow. [NOTE: Other solutions?]
+When the initiator sends a FRAGMENT_ACK notification in response to a
+fragmented response, it MUST set the IKE header Response (R) bit.
+This results in a message that is technically a
+“response to a response” and reuses the same Message ID, which is
+unusual in IKEv2.  However, this message is informational in nature,
+does not advance the Message ID state, and does not require a
+response. [NOTE: Other solutions/ideas?]
 
 ** Processing Fragment Acknowledgment Message
 
@@ -239,14 +240,19 @@ retransmit only the missing fragments.
 
 * Operational Considerations
 
-The FRAGMENT_ACK notifcation message SHOULD NOT be large enough to cause
-path-MTU issues. If the number of acknowledged fragments results in a
-payload that approaches the path MTU or IKEv2 Fragemnet size
-, the sender MAY limit the number of fragment ranges included in
-a single message and send multiple FRAGMENT_ACK messages if
-necessary. Implementations SHOULD ensure that each FRAGMENT_ACK
-message fits within a single UDP datagram to avoid IP-layer
-fragmentation.
+
+The FRAGMENT_ACK notification message SHOULD NOT be large enough to
+cause path-MTU issues.  If the number of acknowledged fragments
+results in a payload that approaches the path MTU or the IKEv2
+fragment size, the sender MAY limit the number of missing fragment
+ranges included in a single message and send multiple FRAGMENT_ACK
+messages if necessary.  Implementations SHOULD ensure that each
+FRAGMENT_ACK message fits within a single UDP datagram to avoid
+IP-layer fragmentation.
+
+When the sender receives multiple FRAGMENT_ACK messages, the sender
+treats the union of all ranges acknowledged so far as the
+authoritative view.
 
 ** When to Send a Fragment Acknowledgment
 
@@ -271,7 +277,7 @@ time to converge.
 	as specified in [[RFC7383]]
 - Why not use IKEv2 INFORMATIONAL? That may adhere more to IKEv2.
   However, every INFORMATIONAL needs a response. And if there is no
-  response the INFORMATIONAL message MUST be retransmitted to adance
+  response the INFORMATIONAL message MUST be retransmitted to advance
 	IKE state. This would lead to complex unpredictable retransmissions.
 - Why not make new IKEv2 exchange without a response? Instead of
   responding to the same : responding with IKE_AUTH or IKE_INTERMEDIATE
@@ -279,11 +285,11 @@ time to converge.
 	response. The message will carry IKE exchange and message ID it is
 	responding to. This might be bigger change. This will bigger protocol
 	change.
-- Should every acknowledgement sent by an IKE peer MUST include the
-  entire state of the buffer. That is, acknowledgements are cumulative.
-  However, when the entire state does not conservately fit into one packt
-  FRAGMENT_ACK message would be partial.
-
+- Should every acknowledgment sent by an IKE peer MUST include the
+  entire state of the buffer. That is, acknowledgments are cumulative.
+  However, when the entire state does not conservatively fit into one
+	packet FRAGMENT_ACK message would be partial.
+- Rename ACK to NACK? -ve acknowledgment?
 
 ** New Exchange: IKE_FRAG_ACK?
 
@@ -318,7 +324,7 @@ on this topic.
 One potential implementation issue I can see with these ACKs is the IV
 when using AEAD.  Both the request and the response use the same message
 ID as the actual messages more than once. If the IKEv2 Message ID is
-used as IV this would lead to resuse of IV. Which MUST be avoided.
+used as IV this would lead to reuse of IV. Which MUST be avoided.
 
 ** Update to RFC7383
 [[RFC7383]] specifies that when an IKE message is retransmitted, all
@@ -327,14 +333,13 @@ retransmitted.  The selective retransmission enabled by the
 FRAGMENT_ACK mechanism defined in this document relaxes that
 requirement by allowing the sender to retransmit only the fragments
 that the peer identifies as missing.  Accordingly, this document
-updates RFC 7383 by modifying the retransmission behavior defined.
+updates [[RFC7383]] by modifying the retransmission behavior specified
+in Section 2.6. When FRAGMENT_ACK is negotiated, a sender MAY
+retransmit only the fragments indicated as missing by the peer, rather
+than retransmitting all fragments including fragment number 1.
 
-With FRAGMENT_ACK response, a retransmission would not include the first
-fragment as required by [[RFC7383]].  May be add retransmissions
-should include the First Fragment? This I.D would update
-[[RFC7383]].
 
-The Section 4 of [[RFC7383]] should be updated to allow fragment
+Section 4 of [[RFC7383]] should be updated to allow fragment
 acknowledgment.
 
 * IANA Considerations
