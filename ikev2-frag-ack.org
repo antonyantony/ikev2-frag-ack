@@ -268,6 +268,30 @@ and to remain consistent with the sender-driven retransmission model
 of IKEv2. However, with large number of fragments this may take long
 time to converge.
 
+** IV reuse when using AEAD
+
+One potential implementation issue I can see with these ACKs is the IV
+when using AEAD.  Both the request and the response use the same Message
+ID as the actual messages more than once. If the IKEv2 Message ID is
+used as IV this would lead to reuse of IV. Which MUST be avoided.
+
+** Update to RFC7383
+[[RFC7383]] specifies that when an IKE message is retransmitted, all
+fragments of that message, including the first fragment, MUST be
+retransmitted.  The selective retransmission enabled by the
+FRAGMENT_ACK mechanism defined in this document relaxes that
+requirement by allowing the sender to retransmit only the fragments
+that the peer identifies as missing.  Accordingly, this document
+updates [[RFC7383]] by modifying the retransmission behavior specified
+in Section 2.6. When FRAGMENT_ACK is negotiated, a sender MAY
+retransmit only the fragments indicated as missing by the peer, rather
+than retransmitting all fragments including fragment number 1.
+
+
+Section 4 of [[RFC7383]] should be updated to allow fragment
+acknowledgment.
+
+
 * Editors Notes Open Issues
 
 - Path MTU discovery mentioned in [[RFC7383]] is currently ignored;
@@ -319,28 +343,6 @@ It would be complex for the limited goal of fragment acknowledgment
 and selective retransmission. Other authors may have different views
 on this topic.
 
-** IV reuse when using AEAD
-
-One potential implementation issue I can see with these ACKs is the IV
-when using AEAD.  Both the request and the response use the same message
-ID as the actual messages more than once. If the IKEv2 Message ID is
-used as IV this would lead to reuse of IV. Which MUST be avoided.
-
-** Update to RFC7383
-[[RFC7383]] specifies that when an IKE message is retransmitted, all
-fragments of that message, including the first fragment, MUST be
-retransmitted.  The selective retransmission enabled by the
-FRAGMENT_ACK mechanism defined in this document relaxes that
-requirement by allowing the sender to retransmit only the fragments
-that the peer identifies as missing.  Accordingly, this document
-updates [[RFC7383]] by modifying the retransmission behavior specified
-in Section 2.6. When FRAGMENT_ACK is negotiated, a sender MAY
-retransmit only the fragments indicated as missing by the peer, rather
-than retransmitting all fragments including fragment number 1.
-
-
-Section 4 of [[RFC7383]] should be updated to allow fragment
-acknowledgment.
 
 * IANA Considerations
 
