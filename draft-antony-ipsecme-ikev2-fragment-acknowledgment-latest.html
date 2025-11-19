@@ -1369,6 +1369,12 @@ lossy network conditions.<a href="#section-abstract-1" class="pilcrow">¶</a></p
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
                 <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-when-to-send-a-fragment-ack" class="internal xref">When to Send a Fragment Acknowledgment</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-iv-reuse-when-using-aead" class="internal xref">IV reuse when using AEAD</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-update-to-rfc7383" class="internal xref">Update to RFC7383</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
@@ -1379,12 +1385,6 @@ lossy network conditions.<a href="#section-abstract-1" class="pilcrow">¶</a></p
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
                 <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-why-not-tcp" class="internal xref">Why not TCP?</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
-                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-iv-reuse-when-using-aead" class="internal xref">IV reuse when using AEAD</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4">
-                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="auto internal xref">7.4</a>.  <a href="#name-update-to-rfc7383" class="internal xref">Update to RFC7383</a></p>
 </li>
             </ul>
 </li>
@@ -1668,6 +1668,32 @@ and to remain consistent with the sender-driven retransmission model
 of IKEv2. However, with large number of fragments this may take long
 time to converge.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 </section>
+<section id="section-6.2">
+        <h3 id="name-iv-reuse-when-using-aead">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-iv-reuse-when-using-aead" class="section-name selfRef">IV reuse when using AEAD</a>
+        </h3>
+<p id="section-6.2-1">One potential implementation issue I can see with these ACKs is the IV
+when using AEAD.  Both the request and the response use the same Message
+ID as the actual messages more than once. If the IKEv2 Message ID is
+used as IV this would lead to reuse of IV. Which MUST be avoided.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-6.3">
+        <h3 id="name-update-to-rfc7383">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-update-to-rfc7383" class="section-name selfRef">Update to RFC7383</a>
+        </h3>
+<p id="section-6.3-1"><span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> specifies that when an IKE message is retransmitted, all
+fragments of that message, including the first fragment, MUST be
+retransmitted.  The selective retransmission enabled by the
+FRAGMENT_ACK mechanism defined in this document relaxes that
+requirement by allowing the sender to retransmit only the fragments
+that the peer identifies as missing.  Accordingly, this document
+updates <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> by modifying the retransmission behavior specified
+in Section 2.6. When FRAGMENT_ACK is negotiated, a sender MAY
+retransmit only the fragments indicated as missing by the peer, rather
+than retransmitting all fragments including fragment number 1.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.3-2">Section 4 of <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> should be updated to allow fragment
+acknowledgment.<a href="#section-6.3-2" class="pilcrow">¶</a></p>
+</section>
 </section>
 <section id="section-7">
       <h2 id="name-editors-notes-open-issues">
@@ -1738,32 +1764,6 @@ may be one day congestion control!
 It would be complex for the limited goal of fragment acknowledgment
 and selective retransmission. Other authors may have different views
 on this topic.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
-</section>
-<section id="section-7.3">
-        <h3 id="name-iv-reuse-when-using-aead">
-<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-iv-reuse-when-using-aead" class="section-name selfRef">IV reuse when using AEAD</a>
-        </h3>
-<p id="section-7.3-1">One potential implementation issue I can see with these ACKs is the IV
-when using AEAD.  Both the request and the response use the same message
-ID as the actual messages more than once. If the IKEv2 Message ID is
-used as IV this would lead to reuse of IV. Which MUST be avoided.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
-</section>
-<section id="section-7.4">
-        <h3 id="name-update-to-rfc7383">
-<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-update-to-rfc7383" class="section-name selfRef">Update to RFC7383</a>
-        </h3>
-<p id="section-7.4-1"><span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> specifies that when an IKE message is retransmitted, all
-fragments of that message, including the first fragment, MUST be
-retransmitted.  The selective retransmission enabled by the
-FRAGMENT_ACK mechanism defined in this document relaxes that
-requirement by allowing the sender to retransmit only the fragments
-that the peer identifies as missing.  Accordingly, this document
-updates <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> by modifying the retransmission behavior specified
-in Section 2.6. When FRAGMENT_ACK is negotiated, a sender MAY
-retransmit only the fragments indicated as missing by the peer, rather
-than retransmitting all fragments including fragment number 1.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
-<p id="section-7.4-2">Section 4 of <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> should be updated to allow fragment
-acknowledgment.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
 </section>
 </section>
 <section id="section-8">
