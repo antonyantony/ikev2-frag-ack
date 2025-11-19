@@ -5,7 +5,7 @@
 
 #+RFC_CATEGORY: std
 #+RFC_NAME: draft-antony-ipsecme-ikev2-fragment-acknowledgment
-#+RFC_VERSION: 01
+#+RFC_VERSION: 02
 #+RFC_IPR: trust200902
 #+RFC_STREAM: IETF
 #+RFC_XML_VERSION: 3
