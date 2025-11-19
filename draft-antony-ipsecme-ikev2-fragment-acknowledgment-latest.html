@@ -1234,7 +1234,7 @@ li > p:last-of-type:only-child {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Antony, et al.</td>
-<td class="center">Expires 22 May 2026</td>
+<td class="center">Expires 23 May 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1248,12 +1248,12 @@ li > p:last-of-type:only-child {
 <a href="https://www.rfc-editor.org/rfc/rfcRFC7383" class="eref">RFC7383</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-11-18" class="published">18 November 2025</time>
+<time datetime="2025-11-19" class="published">19 November 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-05-22">22 May 2026</time></dd>
+<dd class="expires"><time datetime="2026-05-23">23 May 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1306,7 +1306,7 @@ lossy network conditions.<a href="#section-abstract-1" class="pilcrow">¶</a></p
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 22 May 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 23 May 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1449,7 +1449,7 @@ timeout <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>. The res
 retransmission or to signal that it has received an incomplete set of
 fragments.  This document proposes to extend that model slightly by
 allowing the responder, upon receiving one or more fragments of an<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7">IKE message and detecting that some fragments are missing, to send a
+<p id="section-1-7">IKE message and detecting that some fragments are missing, to send an
 IKEv2 response, of the same exchange with Fragment Acknowledgment
 notification indicating the missing fragments. This message is sent
 with the IKEv2 Response flag set.  It does not require a response,
@@ -1573,14 +1573,13 @@ ACK etc.                /
           <p id="section-3-5.4.1">Pairs of ACK # and Range<a href="#section-3-5.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-3-6">The payload enumerates  a set of received fragments for a single IKE
-message. The ACK # field indicates the start with lowest fragment
-number received.  And the Missing # field indicates the
-contiguous range of missing fragments.
-It enables selective retransmission of only the missing
-fragments by the sender. The Total Fragments field is part of each
-fragment header, as defined in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, Section 2.5.
-e.g 4,4 7,10 and so on.<a href="#section-3-6" class="pilcrow">¶</a></p>
+<p id="section-3-6">The payload enumerates the set of missing fragments for a single IKE
+message. The ACK # field identifies the lowest-numbered missing
+fragment, and the Missing # field specifies the contiguous range of
+additional missing fragments.  This allows the sender to selectively
+retransmit only those fragments that have not been received.  The
+Total Fragments field is present in each fragment header, as defined
+in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, Section 2.5.  For example: 4,4; 7,10; and so on.<a href="#section-3-6" class="pilcrow">¶</a></p>
 <section id="section-3.1">
         <h3 id="name-sending-fragment-acknowledg">
 <a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-sending-fragment-acknowledg" class="section-name selfRef">Sending Fragment Acknowledgment response</a>
@@ -1590,11 +1589,13 @@ Acknowledgment notification after receiving one or more fragments
 of a request. See <a href="#ike-intermediate-request" class="auto internal xref">Figure 1</a>. Similarly, the
 initiator MAY send a Fragment Acknowledgment notification after
 receiving one or more fragments of a response. See <a href="#ike-intermediate-response" class="auto internal xref">Figure 2</a>.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
-<p id="section-3.1-2">When the initiator sends a FRAGMENT_ACK notification in
-response to a fragmented response, it would need to set the IKE
-header Response flag (R) bit. This results in a
-"response to a response" that uses the same Message ID, which is
-somewhat unusual in IKEv2 message flow. [NOTE: Other solutions?]<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+<p id="section-3.1-2">When the initiator sends a FRAGMENT_ACK notification in response to a
+fragmented response, it MUST set the IKE header Response (R) bit.
+This results in a message that is technically a
+“response to a response” and reuses the same Message ID, which is
+unusual in IKEv2.  However, this message is informational in nature,
+does not advance the Message ID state, and does not require a
+response. [NOTE: Other solutions/ideas?]<a href="#section-3.1-2" class="pilcrow">¶</a></p>
 </section>
 <section id="section-3.2">
         <h3 id="name-processing-fragment-acknowl">
@@ -1640,14 +1641,17 @@ retransmit only the missing fragments.<a href="#section-5-1" class="pilcrow">¶<
       <h2 id="name-operational-considerations">
 <a href="#section-6" class="section-number selfRef">6. </a><a href="#name-operational-considerations" class="section-name selfRef">Operational Considerations</a>
       </h2>
-<p id="section-6-1">The FRAGMENT_ACK notifcation message SHOULD NOT be large enough to cause
-path-MTU issues. If the number of acknowledged fragments results in a
-payload that approaches the path MTU or IKEv2 Fragemnet size
-, the sender MAY limit the number of fragment ranges included in
-a single message and send multiple FRAGMENT_ACK messages if
-necessary. Implementations SHOULD ensure that each FRAGMENT_ACK
-message fits within a single UDP datagram to avoid IP-layer
-fragmentation.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-1">The FRAGMENT_ACK notification message SHOULD NOT be large enough to
+cause path-MTU issues.  If the number of acknowledged fragments
+results in a payload that approaches the path MTU or the IKEv2
+fragment size, the sender MAY limit the number of missing fragment
+ranges included in a single message and send multiple FRAGMENT_ACK
+messages if necessary.  Implementations SHOULD ensure that each
+FRAGMENT_ACK message fits within a single UDP datagram to avoid
+IP-layer fragmentation.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-2">When the sender receives multiple FRAGMENT_ACK messages, the sender
+treats the union of all ranges acknowledged so far as the
+authoritative view.<a href="#section-6-2" class="pilcrow">¶</a></p>
 <section id="section-6.1">
         <h3 id="name-when-to-send-a-fragment-ack">
 <a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-when-to-send-a-fragment-ack" class="section-name selfRef">When to Send a Fragment Acknowledgment</a>
@@ -1682,7 +1686,7 @@ and the IKE state will not advance. This will have re-fragmented
         <li class="normal" id="section-7-1.3">
           <p id="section-7-1.3.1">Why not use IKEv2 INFORMATIONAL? That may adhere more to IKEv2.
 However, every INFORMATIONAL needs a response. And if there is no
-response the INFORMATIONAL message MUST be retransmitted to adance
+response the INFORMATIONAL message MUST be retransmitted to advance
       IKE state. This would lead to complex unpredictable retransmissions.<a href="#section-7-1.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-1.4">
@@ -1694,10 +1698,13 @@ responding to the same : responding with IKE_AUTH or IKE_INTERMEDIATE
       change.<a href="#section-7-1.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-1.5">
-          <p id="section-7-1.5.1">Should every acknowledgement sent by an IKE peer MUST include the
-entire state of the buffer. That is, acknowledgements are cumulative.
-However, when the entire state does not conservately fit into one packt
-FRAGMENT_ACK message would be partial.<a href="#section-7-1.5.1" class="pilcrow">¶</a></p>
+          <p id="section-7-1.5.1">Should every acknowledgment sent by an IKE peer MUST include the
+entire state of the buffer. That is, acknowledgments are cumulative.
+However, when the entire state does not conservatively fit into one
+      packet FRAGMENT_ACK message would be partial.<a href="#section-7-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-7-1.6">
+          <p id="section-7-1.6.1">Rename ACK to NACK? -ve acknowledgment?<a href="#section-7-1.6.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <section id="section-7.1">
@@ -1739,7 +1746,7 @@ on this topic.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
 <p id="section-7.3-1">One potential implementation issue I can see with these ACKs is the IV
 when using AEAD.  Both the request and the response use the same message
 ID as the actual messages more than once. If the IKEv2 Message ID is
-used as IV this would lead to resuse of IV. Which MUST be avoided.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+used as IV this would lead to reuse of IV. Which MUST be avoided.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
 </section>
 <section id="section-7.4">
         <h3 id="name-update-to-rfc7383">
@@ -1751,13 +1758,12 @@ retransmitted.  The selective retransmission enabled by the
 FRAGMENT_ACK mechanism defined in this document relaxes that
 requirement by allowing the sender to retransmit only the fragments
 that the peer identifies as missing.  Accordingly, this document
-updates RFC 7383 by modifying the retransmission behavior defined.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
-<p id="section-7.4-2">With FRAGMENT_ACK response, a retransmission would not include the first
-fragment as required by <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>.  May be add retransmissions
-should include the First Fragment? This I.D would update
-<span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
-<p id="section-7.4-3">The Section 4 of <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> should be updated to allow fragment
-acknowledgment.<a href="#section-7.4-3" class="pilcrow">¶</a></p>
+updates <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> by modifying the retransmission behavior specified
+in Section 2.6. When FRAGMENT_ACK is negotiated, a sender MAY
+retransmit only the fragments indicated as missing by the peer, rather
+than retransmitting all fragments including fragment number 1.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.4-2">Section 4 of <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> should be updated to allow fragment
+acknowledgment.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
 </section>
 </section>
 <section id="section-8">
