@@ -107,14 +107,23 @@ capitals, as shown here.
 
 * FRAGMENT_ACK Notify Message Status Type payload
 
-The Fragment Acknowledgment Notifier, FRAGMENT_ACK, is primarily
-useful during IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA
-exchanges. During IKE_AUTH and IKE_INTERMEDIATE, peer authentication
-may still be incomplete.  In these exchanges, fragments are already
+The Fragment Acknowledgment Notifier, FRAGMENT_ACK_REQ and
+FRAGMENT_ACK_RES, are primarily useful during IKE_AUTH,
+IKE_INTERMEDIATE, and CREATE_CHILD_SA exchanges. During IKE_AUTH and
+IKE_INTERMEDIATE, peer authentication may still be incomplete.
+In these exchanges, fragments are already
 protected by encryption and integrity using SK_e and SK_a, which
 must have been derived but not yet authenticated.  The format of
 the fragment header is specified in [[RFC7383]].
 
+
+- FRAGMENT_ACK_REQ — acknowledgment of fragments belonging to a request.
+
+- FRAGMENT_ACK_RES — acknowledgment of fragments belonging to a response.
+
+These two notifiers would make the semantic direction explicit,
+eliminating the ambiguity simultaneous exchanges or delayed arrival with
+identical Message IDs.
 
 #+caption: IKE_INTERMEDIATE request
 #+name: ike-intermediate-request
@@ -176,7 +185,7 @@ ACK etc.                /
 
 - Protocol ID (1 octet) - MUST be 0.  MUST be ignored if not 0.
 - SPI Size (1 octet) - MUST be 0.  MUST be ignored if not 0.
-- Notify Status Message Type value (2 octets) - set to TBD2.
+- Notify Status Message Type value (2 octets) - set to TBD2 or TBD3
 - Pairs of ACK # and Range
 
 The payload enumerates the set of missing fragments for a single IKE
@@ -187,6 +196,9 @@ retransmit only those fragments that have not been received.  The
 Total Fragments field is present in each fragment header, as defined
 in [[RFC7383]], Section 2.5.  For example: 4,4; 7,10; and so on.
 
+FRFRAGMENT_ACK_RESAGMENT_ACK_REQ or FRAGMENT_ACK_RES depends on whether a peer
+is acknowledging an IKEv2 request or a response.
+
 ** Sending Fragment Acknowledgment response
 
 The responder MAY send a response to an exchange with Fragment
@@ -195,13 +207,13 @@ of a request. See [[ike-intermediate-request]]. Similarly, the
 initiator MAY send a Fragment Acknowledgment notification after
 receiving one or more fragments of a response. See [[ike-intermediate-response]].
 
-When the initiator sends a FRAGMENT_ACK notification in response to a
-fragmented response, it MUST set the IKE header Response (R) bit.
-This results in a message that is technically a
+When the initiator sends a FRAGMENT_ACK_RES notification in response
+to a fragmented response, it MUST set the IKE header Response (R)
+bit. This results in a message that is technically a
 “response to a response” and reuses the same Message ID, which is
-unusual in IKEv2.  However, this message is informational in nature,
-does not advance the Message ID state, and does not require a
-response. [NOTE: Other solutions/ideas?]
+unusual in IKEv2.  However, the notifier is distinct FRAGMENT_ACK_RES.
+This message is informational in nature, does not advance the Message ID state,
+and does not require a response.
 
 ** Processing Fragment Acknowledgment Message
 
@@ -234,9 +246,10 @@ It does not include any data in the Notification Data field.
 
 * Backward Compatibility
 
-Receipt of a FRAGMENT_ACK notification MUST NOT be interpreted as
-advancing the IKEv2 exchange state. Instead it is signal to
-retransmit only the missing fragments.
+Receipt of a FRAGMENT_ACK_REQ or FRAGMENT_ACK_RES notification
+MUST NOT be interpreted as advancing the IKEv2 exchange state.
+Instead it is signal to retransmit only the missing fragments.
+It is only sent after both ends have sent FRAGMENT_ACK_SUPPORTED.
 
 * Operational Considerations
 
@@ -313,7 +326,7 @@ acknowledgment.
   entire state of the buffer. That is, acknowledgments are cumulative.
   However, when the entire state does not conservatively fit into one
 	packet FRAGMENT_ACK message would be partial.
-- Rename ACK to NACK? -ve acknowledgment?
+- Rename ACK to NACK? -ve acknowledgment? May be later?
 
 ** New Exchange: IKE_FRAG_ACK?
 
@@ -352,8 +365,8 @@ This document defines one new registration for the IANA
 |Value   | Notify Message Status Type  | Reference       |
 |--------|-----------------------------|-----------------|
 | [TBD1] | FRAGMENT_ACK_SUPPORTED      | [this document] |
-|--------|-----------------------------|-----------------|
-| [TBD2] | FRAGMENT_ACK                | [this document] |
+| [TBD2] | FRAGMENT_ACK_REQ            | [this document] |
+| [TBD2] | FRAGMENT_ACK_RES            | [this document] |
 
 * Acknowledgments
 
