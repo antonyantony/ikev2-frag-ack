@@ -1607,9 +1607,9 @@ receiving one or more fragments of a response. See <a href="#ike-intermediate-re
 to a fragmented response, it MUST set the IKE header Response (R)
 bit. This results in a message that is technically a
 “response to a response” and reuses the same Message ID, which is
-unusual in IKEv2.  However, this message is informational in nature,
-does not advance the Message ID state, and does not require a
-response.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+unusual in IKEv2.  However, the notifier is distinct FRAGMENT_ACK_RES.
+This message is informational in nature, does not advance the Message ID state,
+and does not require a response.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
 </section>
 <section id="section-3.2">
         <h3 id="name-processing-fragment-acknowl">
@@ -1745,7 +1745,7 @@ However, when the entire state does not conservatively fit into one
       packet FRAGMENT_ACK message would be partial.<a href="#section-7-1.5.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-1.6">
-          <p id="section-7-1.6.1">Rename ACK to NACK? -ve acknowledgment?<a href="#section-7-1.6.1" class="pilcrow">¶</a></p>
+          <p id="section-7-1.6.1">Rename ACK to NACK? -ve acknowledgment? May be later?<a href="#section-7-1.6.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <section id="section-7.1">

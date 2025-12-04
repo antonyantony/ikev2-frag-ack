@@ -301,8 +301,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    to a fragmented response, it MUST set the IKE header Response (R)
    bit.  This results in a message that is technically a “response to a
    response” and reuses the same Message ID, which is unusual in IKEv2.
-   However, this message is informational in nature, does not advance
-   the Message ID state, and does not require a response.
+   However, the notifier is distinct FRAGMENT_ACK_RES.  This message is
+   informational in nature, does not advance the Message ID state, and
+   does not require a response.
 
 3.2.  Processing Fragment Acknowledgment Message
 
@@ -329,7 +330,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    If either peer omits the FRAGMENT_ACK_SUPPORTED notification in
    IKE_SA_INIT the extension MUST NOT be used in subsequent exchanges
    within that IKE SA.
-
 
 
 
@@ -438,7 +438,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
       conservatively fit into one packet FRAGMENT_ACK message would be
       partial.
 
-   *  Rename ACK to NACK? -ve acknowledgment?
+   *  Rename ACK to NACK? -ve acknowledgment?  May be later?
 
 
 
