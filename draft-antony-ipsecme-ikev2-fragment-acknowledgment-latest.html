@@ -1230,11 +1230,11 @@ li > p:last-of-type:only-child {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">IKEv2 Fragment Acknowledgment</td>
-<td class="right">November 2025</td>
+<td class="right">December 2025</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Antony, et al.</td>
-<td class="center">Expires 23 May 2026</td>
+<td class="center">Expires 7 June 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1248,12 +1248,12 @@ li > p:last-of-type:only-child {
 <a href="https://www.rfc-editor.org/rfc/rfcRFC7383" class="eref">RFC7383</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-11-19" class="published">19 November 2025</time>
+<time datetime="2025-12-04" class="published">4 December 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-05-23">23 May 2026</time></dd>
+<dd class="expires"><time datetime="2026-06-07">7 June 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1306,7 +1306,7 @@ lossy network conditions.<a href="#section-abstract-1" class="pilcrow">¶</a></p
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 23 May 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 7 June 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1480,16 +1480,28 @@ capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
       <h2 id="name-fragment_ack-notify-message">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-fragment_ack-notify-message" class="section-name selfRef">FRAGMENT_ACK Notify Message Status Type payload</a>
       </h2>
-<p id="section-3-1">The Fragment Acknowledgment Notifier, FRAGMENT_ACK, is primarily
-useful during IKE_AUTH, IKE_INTERMEDIATE, and CREATE_CHILD_SA
-exchanges. During IKE_AUTH and IKE_INTERMEDIATE, peer authentication
-may still be incomplete.  In these exchanges, fragments are already
+<p id="section-3-1">The Fragment Acknowledgment Notifier, FRAGMENT_ACK_REQ and
+FRAGMENT_ACK_RES, are primarily useful during IKE_AUTH,
+IKE_INTERMEDIATE, and CREATE_CHILD_SA exchanges. During IKE_AUTH and
+IKE_INTERMEDIATE, peer authentication may still be incomplete.
+In these exchanges, fragments are already
 protected by encryption and integrity using SK_e and SK_a, which
 must have been derived but not yet authenticated.  The format of
 the fragment header is specified in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3-2.1">
+          <p id="section-3-2.1.1">FRAGMENT_ACK_REQ — acknowledgment of fragments belonging to a request.<a href="#section-3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-2.2">
+          <p id="section-3-2.2.1">FRAGMENT_ACK_RES — acknowledgment of fragments belonging to a response.<a href="#section-3-2.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-3-3">These two notifiers would make the semantic direction explicit,
+eliminating the ambiguity simultaneous exchanges or delayed arrival with
+identical Message IDs.<a href="#section-3-3" class="pilcrow">¶</a></p>
 <span id="name-ike_intermediate-request"></span><div id="ike-intermediate-request">
 <figure id="figure-1">
-        <div class="sourcecode" id="section-3-2.1">
+        <div class="sourcecode" id="section-3-4.1">
 <pre>
 #Request
 Initiator                        Responder
@@ -1511,7 +1523,7 @@ IKE_INTERMEDIATE --------------&gt; Possibly repeat above until all
 </div>
 <span id="name-ike_intermediate-response"></span><div id="ike-intermediate-response">
 <figure id="figure-2">
-        <div class="sourcecode" id="section-3-3.1">
+        <div class="sourcecode" id="section-3-5.1">
 <pre>
 # Response
 Initiator                        Responder
@@ -1538,7 +1550,7 @@ ACK etc.                /
 </div>
 <span id="name-fragment_ack"></span><div id="fragment-ack-notify">
 <figure id="figure-3">
-        <div class="sourcecode" id="section-3-4.1">
+        <div class="sourcecode" id="section-3-6.1">
 <pre>
   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1560,26 +1572,28 @@ ACK etc.                /
         </figcaption></figure>
 </div>
 <ul class="normal">
-<li class="normal" id="section-3-5.1">
-          <p id="section-3-5.1.1">Protocol ID (1 octet) - MUST be 0.  MUST be ignored if not 0.<a href="#section-3-5.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-3-7.1">
+          <p id="section-3-7.1.1">Protocol ID (1 octet) - MUST be 0.  MUST be ignored if not 0.<a href="#section-3-7.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-3-5.2">
-          <p id="section-3-5.2.1">SPI Size (1 octet) - MUST be 0.  MUST be ignored if not 0.<a href="#section-3-5.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-3-7.2">
+          <p id="section-3-7.2.1">SPI Size (1 octet) - MUST be 0.  MUST be ignored if not 0.<a href="#section-3-7.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-3-5.3">
-          <p id="section-3-5.3.1">Notify Status Message Type value (2 octets) - set to TBD2.<a href="#section-3-5.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-3-7.3">
+          <p id="section-3-7.3.1">Notify Status Message Type value (2 octets) - set to TBD2 or TBD3<a href="#section-3-7.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-3-5.4">
-          <p id="section-3-5.4.1">Pairs of ACK # and Range<a href="#section-3-5.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-3-7.4">
+          <p id="section-3-7.4.1">Pairs of ACK # and Range<a href="#section-3-7.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-3-6">The payload enumerates the set of missing fragments for a single IKE
+<p id="section-3-8">The payload enumerates the set of missing fragments for a single IKE
 message. The ACK # field identifies the lowest-numbered missing
 fragment, and the Missing # field specifies the contiguous range of
 additional missing fragments.  This allows the sender to selectively
 retransmit only those fragments that have not been received.  The
 Total Fragments field is present in each fragment header, as defined
-in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, Section 2.5.  For example: 4,4; 7,10; and so on.<a href="#section-3-6" class="pilcrow">¶</a></p>
+in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, Section 2.5.  For example: 4,4; 7,10; and so on.<a href="#section-3-8" class="pilcrow">¶</a></p>
+<p id="section-3-9">FRFRAGMENT_ACK_RESAGMENT_ACK_REQ or FRAGMENT_ACK_RES depends on whether a peer
+is acknowledging an IKEv2 request or a response.<a href="#section-3-9" class="pilcrow">¶</a></p>
 <section id="section-3.1">
         <h3 id="name-sending-fragment-acknowledg">
 <a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-sending-fragment-acknowledg" class="section-name selfRef">Sending Fragment Acknowledgment response</a>
@@ -1589,13 +1603,13 @@ Acknowledgment notification after receiving one or more fragments
 of a request. See <a href="#ike-intermediate-request" class="auto internal xref">Figure 1</a>. Similarly, the
 initiator MAY send a Fragment Acknowledgment notification after
 receiving one or more fragments of a response. See <a href="#ike-intermediate-response" class="auto internal xref">Figure 2</a>.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
-<p id="section-3.1-2">When the initiator sends a FRAGMENT_ACK notification in response to a
-fragmented response, it MUST set the IKE header Response (R) bit.
-This results in a message that is technically a
+<p id="section-3.1-2">When the initiator sends a FRAGMENT_ACK_RES notification in response
+to a fragmented response, it MUST set the IKE header Response (R)
+bit. This results in a message that is technically a
 “response to a response” and reuses the same Message ID, which is
 unusual in IKEv2.  However, this message is informational in nature,
 does not advance the Message ID state, and does not require a
-response. [NOTE: Other solutions/ideas?]<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+response.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
 </section>
 <section id="section-3.2">
         <h3 id="name-processing-fragment-acknowl">
@@ -1633,9 +1647,10 @@ It does not include any data in the Notification Data field.<a href="#section-4-
       <h2 id="name-backward-compatibility">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-backward-compatibility" class="section-name selfRef">Backward Compatibility</a>
       </h2>
-<p id="section-5-1">Receipt of a FRAGMENT_ACK notification MUST NOT be interpreted as
-advancing the IKEv2 exchange state. Instead it is signal to
-retransmit only the missing fragments.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-1">Receipt of a FRAGMENT_ACK_REQ or FRAGMENT_ACK_RES notification
+MUST NOT be interpreted as advancing the IKEv2 exchange state.
+Instead it is signal to retransmit only the missing fragments.
+It is only sent after both ends have sent FRAGMENT_ACK_SUPPORTED.<a href="#section-5-1" class="pilcrow">¶</a></p>
 </section>
 <section id="section-6">
       <h2 id="name-operational-considerations">
@@ -1787,14 +1802,17 @@ on this topic.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
             <td class="text-left" rowspan="1" colspan="1">FRAGMENT_ACK_SUPPORTED</td>
             <td class="text-left" rowspan="1" colspan="1">[this document]</td>
           </tr>
-        </tbody>
-        <tfoot>
           <tr>
             <td class="text-left" rowspan="1" colspan="1">[TBD2]</td>
-            <td class="text-left" rowspan="1" colspan="1">FRAGMENT_ACK</td>
+            <td class="text-left" rowspan="1" colspan="1">FRAGMENT_ACK_REQ</td>
             <td class="text-left" rowspan="1" colspan="1">[this document]</td>
           </tr>
-        </tfoot>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">[TBD2]</td>
+            <td class="text-left" rowspan="1" colspan="1">FRAGMENT_ACK_RES</td>
+            <td class="text-left" rowspan="1" colspan="1">[this document]</td>
+          </tr>
+        </tbody>
       </table>
 </section>
 <section id="section-9">
