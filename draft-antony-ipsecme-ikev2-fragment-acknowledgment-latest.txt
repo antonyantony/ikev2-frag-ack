@@ -6,8 +6,8 @@ IP Security Maintenance and Extensions                         A. Antony
 Internet-Draft                                               S. Klassert
 Updates: RFC7383 (if approved)                                   secunet
 Intended status: Standards Track                              T. Brunner
-Expires: 7 June 2026                                       codelabs GmbH
-                                                         4 December 2025
+Expires: 11 June 2026                                      codelabs GmbH
+                                                         8 December 2025
 
 
                 IKEv2 Fragment Acknowledgment Extension
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 7 June 2026.
+   This Internet-Draft will expire on 11 June 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Antony, et al.             Expires 7 June 2026                  [Page 1]
+Antony, et al.            Expires 11 June 2026                  [Page 1]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -72,14 +72,14 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
      1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Requirements Language . . . . . . . . . . . . . . . . . . . .   4
-   3.  FRAGMENT_ACK Notify Message Status Type payload . . . . . . .   4
+   3.  Fragment Acknowledgment Notify Message Status Type payload  .   4
      3.1.  Sending Fragment Acknowledgment response  . . . . . . . .   6
      3.2.  Processing Fragment Acknowledgment Message  . . . . . . .   6
    4.  Negotiation . . . . . . . . . . . . . . . . . . . . . . . . .   6
    5.  Backward Compatibility  . . . . . . . . . . . . . . . . . . .   7
    6.  Operational Considerations  . . . . . . . . . . . . . . . . .   7
      6.1.  When to Send a Fragment Acknowledgment  . . . . . . . . .   7
-     6.2.  IV reuse when using AEAD  . . . . . . . . . . . . . . . .   7
+     6.2.  IV reuse when using AEAD  . . . . . . . . . . . . . . . .   8
      6.3.  Update to RFC7383 . . . . . . . . . . . . . . . . . . . .   8
    7.  Editors Notes Open Issues . . . . . . . . . . . . . . . . . .   8
      7.1.  New Exchange: IKE_FRAG_ACK? . . . . . . . . . . . . . . .   9
@@ -90,7 +90,7 @@ Table of Contents
    11. Normative References  . . . . . . . . . . . . . . . . . . . .  10
    12. Informative References  . . . . . . . . . . . . . . . . . . .  10
    Appendix A.  Additional Stuff . . . . . . . . . . . . . . . . . .  11
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  11
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  12
 
 1.  Introduction
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Antony, et al.             Expires 7 June 2026                  [Page 2]
+Antony, et al.            Expires 11 June 2026                  [Page 2]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -165,7 +165,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.             Expires 7 June 2026                  [Page 3]
+Antony, et al.            Expires 11 June 2026                  [Page 3]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -178,26 +178,24 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-3.  FRAGMENT_ACK Notify Message Status Type payload
+3.  Fragment Acknowledgment Notify Message Status Type payload
 
-   The Fragment Acknowledgment Notifier, FRAGMENT_ACK_REQ and
-   FRAGMENT_ACK_RES, are primarily useful during IKE_AUTH,
+   Two Notify Message Status Types are defined: FRAGMENT_ACK_REQ, which
+   acknowledges fragments of an IKE request, and FRAGMENT_ACK_RES, which
+   acknowledges fragments of an IKE response.
+
+   The Fragment Acknowledgment notifiers (FRAGMENT_ACK_REQ and
+   FRAGMENT_ACK_RES) are primarily useful during the IKE_AUTH,
    IKE_INTERMEDIATE, and CREATE_CHILD_SA exchanges.  During IKE_AUTH and
-   IKE_INTERMEDIATE, peer authentication may still be incomplete.  In
-   these exchanges, fragments are already protected by encryption and
-   integrity using SK_e and SK_a, which must have been derived but not
-   yet authenticated.  The format of the fragment header is specified in
+   IKE_INTERMEDIATE, peer authentication may still be incomplete, but
+   the fragments themselves are protected by encryption and integrity
+   using SK_e and SK_a, which have been derived but not yet
+   authenticated.  The format of the fragment header is specified in
    [RFC7383].
 
-   *  FRAGMENT_ACK_REQ — acknowledgment of fragments belonging to a
-      request.
-
-   *  FRAGMENT_ACK_RES — acknowledgment of fragments belonging to a
-      response.
-
-   These two notifiers would make the semantic direction explicit,
-   eliminating the ambiguity simultaneous exchanges or delayed arrival
-   with identical Message IDs.
+   Using two distinct notifiers makes the direction of acknowledgment
+   explicit, avoiding ambiguity in cases of simultaneous exchanges or
+   delayed delivery where multiple messages share the same Message ID.
 
    #Request
    Initiator                        Responder
@@ -221,7 +219,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.             Expires 7 June 2026                  [Page 4]
+
+
+Antony, et al.            Expires 11 June 2026                  [Page 4]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -277,7 +277,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.             Expires 7 June 2026                  [Page 5]
+Antony, et al.            Expires 11 June 2026                  [Page 5]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -325,18 +325,22 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    Notify Message Status Type (value TBD1) in the IKE_SA_INIT request
    and response messages.  The presence of this notification in both
    directions confirms that both peers support the Fragment
-   Acknowledgment mechanism.
+   Acknowledgment mechanism.  In addition, both peers MUST also signal
+   support for IKEv2 Fragmentation by sending the
+   IKEV2_FRAGMENTATION_SUPPORTED notification as specified in
+   Section 2.3 Negotiation of [RFC7383].
+
+
+
+
+Antony, et al.            Expires 11 June 2026                  [Page 6]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
+
 
    If either peer omits the FRAGMENT_ACK_SUPPORTED notification in
    IKE_SA_INIT the extension MUST NOT be used in subsequent exchanges
    within that IKE SA.
-
-
-
-Antony, et al.             Expires 7 June 2026                  [Page 6]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
-
 
    The FRAGMENT_ACK_SUPPORTED notification follows the general rules for
    Notify Message Status Types as specified in [RFC7296], Section 3.10.
@@ -346,8 +350,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
    Receipt of a FRAGMENT_ACK_REQ or FRAGMENT_ACK_RES notification MUST
    NOT be interpreted as advancing the IKEv2 exchange state.  Instead it
-   is signal to retransmit only the missing fragments.  It is only sent
-   after both ends have sent FRAGMENT_ACK_SUPPORTED.
+   is signal to retransmit only the missing fragments.  It MUST only be
+   sent after both peers have indicated support for
+   FRAGMENT_ACK_SUPPORTED.
 
 6.  Operational Considerations
 
@@ -378,6 +383,17 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    of IKEv2.  However, with large number of fragments this may take long
    time to converge.
 
+
+
+
+
+
+
+Antony, et al.            Expires 11 June 2026                  [Page 7]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
+
+
 6.2.  IV reuse when using AEAD
 
    One potential implementation issue I can see with these ACKs is the
@@ -385,14 +401,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    Message ID as the actual messages more than once.  If the IKEv2
    Message ID is used as IV this would lead to reuse of IV.  Which MUST
    be avoided.
-
-
-
-
-Antony, et al.             Expires 7 June 2026                  [Page 7]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
-
 
 6.3.  Update to RFC7383
 
@@ -427,10 +435,20 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
    *  Why not make new IKEv2 exchange without a response?  Instead of
       responding to the same : responding with IKE_AUTH or
-      IKE_INTERMEDIATE this is worth considering.  New Exchange
+      IKE_INTERMEDIATE This is worth considering.  New Exchange
       IKE_FRAG_ACK : which has no response.  The message will carry IKE
       exchange and message ID it is responding to.  This might be bigger
-      change.  This will bigger protocol change.
+      change.  This will be a bigger protocol change.  Probably too
+      complicated?
+
+
+
+
+
+Antony, et al.            Expires 11 June 2026                  [Page 8]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
+
 
    *  Should every acknowledgment sent by an IKE peer MUST include the
       entire state of the buffer.  That is, acknowledgments are
@@ -439,16 +457,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
       partial.
 
    *  Rename ACK to NACK? -ve acknowledgment?  May be later?
-
-
-
-
-
-
-Antony, et al.             Expires 7 June 2026                  [Page 8]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
-
 
 7.1.  New Exchange: IKE_FRAG_ACK?
 
@@ -483,6 +491,21 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    This document defines one new registration for the IANA "IKEv2 Notify
    Message Status Types" registry.
 
+
+
+
+
+
+
+
+
+
+
+Antony, et al.            Expires 11 June 2026                  [Page 9]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
+
+
          +========+============================+=================+
          | Value  | Notify Message Status Type | Reference       |
          +========+============================+=================+
@@ -494,17 +517,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
          +--------+----------------------------+-----------------+
 
                                   Table 1
-
-
-
-
-
-
-
-Antony, et al.             Expires 7 June 2026                  [Page 9]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
-
 
 9.  Acknowledgments
 
@@ -537,6 +549,19 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 12.  Informative References
 
+
+
+
+
+
+
+
+
+Antony, et al.            Expires 11 June 2026                 [Page 10]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
+
+
    [I-D.ietf-ipsecme-ikev2-reliable-transport]
               Smyslov, V. and T. Reddy.K, "Separate Transports for IKE
               and ESP", Work in Progress, Internet-Draft, draft-ietf-
@@ -554,14 +579,6 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
    [I-D.smyslov-ipsecme-ikev2-extended-pld]
               Smyslov, V., "Extended IKEv2 Payload Format", Work in
               Progress, Internet-Draft, draft-smyslov-ipsecme-ikev2-
-
-
-
-Antony, et al.             Expires 7 June 2026                 [Page 10]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
-
-
               extended-pld-01, 6 March 2023,
               <https://datatracker.ietf.org/doc/html/draft-smyslov-
               ipsecme-ikev2-extended-pld-01>.
@@ -593,6 +610,14 @@ Appendix A.  Additional Stuff
 
    TBD
 
+
+
+
+Antony, et al.            Expires 11 June 2026                 [Page 11]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
+
+
 Authors' Addresses
 
    Antony Antony
@@ -613,4 +638,35 @@ Authors' Addresses
 
 
 
-Antony, et al.             Expires 7 June 2026                 [Page 11]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Antony, et al.            Expires 11 June 2026                 [Page 12]
