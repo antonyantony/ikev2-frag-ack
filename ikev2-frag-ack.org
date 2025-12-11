@@ -302,12 +302,15 @@ in Section 2.6. When FRAGMENT_ACK is negotiated, a sender MAY
 retransmit only the fragments indicated as missing by the peer, rather
 than retransmitting all fragments including fragment number 1.
 
-
 Section 4 of [[RFC7383]] should be updated to allow fragment
 acknowledgment.
 
 
 * Editors Notes Open Issues
+
+The following issues are retained for discussion during the evolution
+of this document and are expected to be resolved or removed if the
+document becomes a Working Group item.
 
 - Path MTU discovery mentioned in [[RFC7383]] is currently ignored;
   applicability TBD.
@@ -328,7 +331,8 @@ acknowledgment.
   entire state of the buffer. That is, acknowledgments are cumulative.
   However, when the entire state does not conservatively fit into one
   packet FRAGMENT_ACK message would be partial.
-- Rename ACK to NACK? -ve acknowledgment? May be later?
+- Rename ACK to NACK? -ve acknowledgment? or SACK May be later?
+
 
 ** New Exchange: IKE_FRAG_ACK?
 
