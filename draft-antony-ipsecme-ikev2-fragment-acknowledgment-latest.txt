@@ -6,12 +6,12 @@ IP Security Maintenance and Extensions                         A. Antony
 Internet-Draft                                               S. Klassert
 Updates: RFC7383 (if approved)                                   secunet
 Intended status: Standards Track                              T. Brunner
-Expires: 11 June 2026                                      codelabs GmbH
-                                                         8 December 2025
+Expires: 14 June 2026                                      codelabs GmbH
+                                                        11 December 2025
 
 
                 IKEv2 Fragment Acknowledgment Extension
-         draft-antony-ipsecme-ikev2-fragment-acknowledgment-02
+         draft-antony-ipsecme-ikev2-fragment-acknowledgment-03
 
 Abstract
 
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 11 June 2026.
+   This Internet-Draft will expire on 14 June 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Antony, et al.            Expires 11 June 2026                  [Page 1]
+Antony, et al.            Expires 14 June 2026                  [Page 1]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Antony, et al.            Expires 11 June 2026                  [Page 2]
+Antony, et al.            Expires 14 June 2026                  [Page 2]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -165,7 +165,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.            Expires 11 June 2026                  [Page 3]
+Antony, et al.            Expires 14 June 2026                  [Page 3]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -221,7 +221,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.            Expires 11 June 2026                  [Page 4]
+Antony, et al.            Expires 14 June 2026                  [Page 4]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -277,7 +277,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.            Expires 11 June 2026                  [Page 5]
+Antony, et al.            Expires 14 June 2026                  [Page 5]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -333,7 +333,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.            Expires 11 June 2026                  [Page 6]
+Antony, et al.            Expires 14 June 2026                  [Page 6]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -389,7 +389,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.            Expires 11 June 2026                  [Page 7]
+Antony, et al.            Expires 14 June 2026                  [Page 7]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -420,6 +420,10 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 7.  Editors Notes Open Issues
 
+   The following issues are retained for discussion during the evolution
+   of this document and are expected to be resolved or removed if the
+   document becomes a Working Group item.
+
    *  Path MTU discovery mentioned in [RFC7383] is currently ignored;
       applicability TBD.
 
@@ -433,6 +437,19 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
       advance IKE state.  This would lead to complex unpredictable
       retransmissions.
 
+
+
+
+
+
+
+
+
+Antony, et al.            Expires 14 June 2026                  [Page 8]
+
+Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
+
+
    *  Why not make new IKEv2 exchange without a response?  Instead of
       responding to the same : responding with IKE_AUTH or
       IKE_INTERMEDIATE This is worth considering.  New Exchange
@@ -441,22 +458,13 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
       change.  This will be a bigger protocol change.  Probably too
       complicated?
 
-
-
-
-
-Antony, et al.            Expires 11 June 2026                  [Page 8]
-
-Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
-
-
    *  Should every acknowledgment sent by an IKE peer MUST include the
       entire state of the buffer.  That is, acknowledgments are
       cumulative.  However, when the entire state does not
       conservatively fit into one packet FRAGMENT_ACK message would be
       partial.
 
-   *  Rename ACK to NACK? -ve acknowledgment?  May be later?
+   *  Rename ACK to NACK? -ve acknowledgment? or SACK May be later?
 
 7.1.  New Exchange: IKE_FRAG_ACK?
 
@@ -493,15 +501,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-
-
-
-
-
-
-
-
-Antony, et al.            Expires 11 June 2026                  [Page 9]
+Antony, et al.            Expires 14 June 2026                  [Page 9]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -557,7 +557,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
 
 
-Antony, et al.            Expires 11 June 2026                 [Page 10]
+Antony, et al.            Expires 14 June 2026                 [Page 10]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -613,7 +613,7 @@ Appendix A.  Additional Stuff
 
 
 
-Antony, et al.            Expires 11 June 2026                 [Page 11]
+Antony, et al.            Expires 14 June 2026                 [Page 11]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment        December 2025
 
@@ -669,4 +669,4 @@ Authors' Addresses
 
 
 
-Antony, et al.            Expires 11 June 2026                 [Page 12]
+Antony, et al.            Expires 14 June 2026                 [Page 12]
