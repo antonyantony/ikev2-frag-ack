@@ -31,7 +31,7 @@ confirm reception of individual fragments during the IKE_AUTH exchange
 and any subsequent exchanges where IKEv2 Fragmentation is used.
 Support for this feature is negotiated using a new Notify Message
 Status Type during IKE_SA_INIT, and fragment acknowledgments are
-exchanged using a separate Notification payload.  This extension
+exchanged using a separate Notification payload. This extension
 improves reliability when large IKE messages are exchanged, such as
 those containing post-quantum cryptography (PQC) payloads, and reduces
 retransmission overhead, thereby improving IKEv2 round-trip times in
@@ -45,8 +45,8 @@ lossy network conditions.
 The Internet Key Exchange Protocol Version 2 (IKEv2) [[RFC7296]] uses
 an unreliable transport (UDP) for message exchange.
 
-Originally, IKEv2 messages were small — typically a few hundred bytes
-to a few kilobytes — such that a simple fragmentation [[RFC7383]] and
+Originally, IKEv2 messages were small - typically a few hundred bytes
+to a few kilobytes - such that a simple fragmentation [[RFC7383]] and
 retransmission mechanism operating over UDP, without congestion control
 or partial acknowledgments, was practically sufficient.  However, with
 the introduction of post-quantum cryptographic (PQC) algorithms into
@@ -79,12 +79,12 @@ timeout [[RFC7383]]. The responder has no means to request
 retransmission or to signal that it has received an incomplete set of
 fragments.  This document proposes to extend that model slightly by
 allowing the responder, upon receiving one or more fragments of an
-
 IKE message and detecting that some fragments are missing, to send an
-IKEv2 response, of the same exchange with Fragment Acknowledgment
-notification indicating the missing fragments. This message is sent
-with the IKEv2 Response flag set.  It does not require a response,
-does not advance the IKEv2 Message ID state.
+IKEv2 response, of the same exchange with Fragments Acknowledgment
+notification indicating the missing fragments. The IKEv2 responder
+send message with the IKEv2 Response flag set, while the initiator
+send it without the IKEv2 Response flag set.  It does not require a
+response, does not advance the IKEv2 Message ID state.
 
 ** Terminology
 
@@ -130,7 +130,7 @@ delayed delivery where multiple messages share the same Message ID.
 Initiator                        Responder
 
 IKE_INTERMEDIATE --------------> received some fragments send back ACK
-                        /------- IKE_INTERMEDIATE (with ACK only)
+                        /------- IKE_INTERMEDIATE (with ACK only, R=1)
                        /
 Full retransmit       /
 IKE_INTERMEDIATE ----/--------->
@@ -154,7 +154,7 @@ IKE_INTERMEDIATE ------/------->
                  <---/           fragment received (although see below)
 Received at least one     /----- IKE_INTERMEDIATE
 fragment                 /
-IKE_INTERMEDIATE (with ACK) --->
+IKE_INTERMEDIATE (with ACK, R=0) --->
                        /         Only send missing fragments
                  <----/   /----- IKE_INTERMEDIATE
 Possibly send another    /
@@ -194,7 +194,7 @@ retransmit only those fragments that have not been received.  The
 Total Fragments field is present in each fragment header, as defined
 in [[RFC7383]], Section 2.5.  For example: 4,4; 7,10; and so on.
 
-FRFRAGMENT_ACK_RESAGMENT_ACK_REQ or FRAGMENT_ACK_RES depends on
+FRAGMENT_ACK_RES FRAGMENT_ACK_REQ or FRAGMENT_ACK_RES depends on
 whether a peer is acknowledging an IKEv2 request or a response.
 
 ** Sending Fragment Acknowledgment response
@@ -206,12 +206,12 @@ initiator MAY send a Fragment Acknowledgment notification after
 receiving one or more fragments of a response. See [[ike-intermediate-response]].
 
 When the initiator sends a FRAGMENT_ACK_RES notification in response
-to a fragmented response, it MUST set the IKE header Response (R)
-bit. This results in a message that is technically a
-“response to a response” and reuses the same Message ID, which is
+to a fragmented response, it MUST NOT set the IKE header Response (R)
+bit. This results in a message reuses the same Message ID, which is
 unusual in IKEv2.  However, the notifier is distinct FRAGMENT_ACK_RES.
 This message is informational in nature, does not advance the
-Message ID state, and does not require a response.
+Message ID state, and does not require a response. The exchange type
+is same the request.
 
 ** Processing Fragment Acknowledgment Message
 
@@ -257,8 +257,8 @@ FRAGMENT_ACK_SUPPORTED.
 
 
 The FRAGMENT_ACK notification message SHOULD NOT be large enough to
-cause path-MTU issues.  If the number of acknowledged fragments
-results in a payload that approaches the path MTU or the IKEv2
+cause PMTU issues.  If the number of acknowledged fragments
+results in a payload that approaches the PMTU or the IKEv2
 fragment size, the sender MAY limit the number of missing fragment
 ranges included in a single message and send multiple FRAGMENT_ACK
 messages if necessary.  Implementations SHOULD ensure that each
@@ -312,9 +312,10 @@ The following issues are retained for discussion during the evolution
 of this document and are expected to be resolved or removed if the
 document becomes a Working Group item.
 
-- Path MTU discovery mentioned in [[RFC7383]] is currently ignored;
-  applicability TBD.
-- When fragments exceed the path MTU, they may not be acknowledged,
+- PMTU discovery mentioned in [[RFC7383]] should work as it is.
+- This I.D. opens up possibility to send fragments of different
+  sizes for PMTU detection.
+- When fragments exceed the PMTU, they may not be acknowledged,
   and the IKE state will not advance. This will have re-fragmented
   as specified in [[RFC7383]]
 - Why not use IKEv2 INFORMATIONAL? That may adhere more to IKEv2.
