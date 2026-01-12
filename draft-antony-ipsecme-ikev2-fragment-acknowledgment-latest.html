@@ -16,7 +16,7 @@ confirm reception of individual fragments during the IKE_AUTH exchange
 and any subsequent exchanges where IKEv2 Fragmentation is used.
 Support for this feature is negotiated using a new Notify Message
 Status Type during IKE_SA_INIT, and fragment acknowledgments are
-exchanged using a separate Notification payload.  This extension
+exchanged using a separate Notification payload. This extension
 improves reliability when large IKE messages are exchanged, such as
 those containing post-quantum cryptography (PQC) payloads, and reduces
 retransmission overhead, thereby improving IKEv2 round-trip times in
@@ -32,7 +32,7 @@ lossy network conditions.
     Python 3.12.3
     ConfigArgParse 1.7.1
     google-i18n-address 3.1.1
-    intervaltree 3.1.0
+    intervaltree 3.2.1
     Jinja2 3.1.2
     lxml 6.0.2
     platformdirs 4.5.1
@@ -1230,11 +1230,11 @@ li > p:last-of-type:only-child {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">IKEv2 Fragment Acknowledgment</td>
-<td class="right">December 2025</td>
+<td class="right">January 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Antony, et al.</td>
-<td class="center">Expires 14 June 2026</td>
+<td class="center">Expires 16 July 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1248,12 +1248,12 @@ li > p:last-of-type:only-child {
 <a href="https://www.rfc-editor.org/rfc/rfcRFC7383" class="eref">RFC7383</a> (if approved)</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-12-11" class="published">11 December 2025</time>
+<time datetime="2026-01-12" class="published">12 January 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-06-14">14 June 2026</time></dd>
+<dd class="expires"><time datetime="2026-07-16">16 July 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1281,7 +1281,7 @@ confirm reception of individual fragments during the IKE_AUTH exchange
 and any subsequent exchanges where IKEv2 Fragmentation is used.
 Support for this feature is negotiated using a new Notify Message
 Status Type during IKE_SA_INIT, and fragment acknowledgments are
-exchanged using a separate Notification payload.  This extension
+exchanged using a separate Notification payload. This extension
 improves reliability when large IKE messages are exchanged, such as
 those containing post-quantum cryptography (PQC) payloads, and reduces
 retransmission overhead, thereby improving IKEv2 round-trip times in
@@ -1306,7 +1306,7 @@ lossy network conditions.<a href="#section-abstract-1" class="pilcrow">¶</a></p
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 14 June 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 16 July 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1315,7 +1315,7 @@ lossy network conditions.<a href="#section-abstract-1" class="pilcrow">¶</a></p
 <a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
         </h2>
 <p id="section-boilerplate.2-1">
-            Copyright (c) 2025 IETF Trust and the persons identified as the
+            Copyright (c) 2026 IETF Trust and the persons identified as the
             document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.2-2">
             This document is subject to BCP 78 and the IETF Trust's Legal
@@ -1419,8 +1419,8 @@ lossy network conditions.<a href="#section-abstract-1" class="pilcrow">¶</a></p
       </h2>
 <p id="section-1-1">The Internet Key Exchange Protocol Version 2 (IKEv2) <span>[<a href="#RFC7296" class="cite xref">RFC7296</a>]</span> uses
 an unreliable transport (UDP) for message exchange.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">Originally, IKEv2 messages were small — typically a few hundred bytes
-to a few kilobytes — such that a simple fragmentation <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> and
+<p id="section-1-2">Originally, IKEv2 messages were small - typically a few hundred bytes
+to a few kilobytes - such that a simple fragmentation <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> and
 retransmission mechanism operating over UDP, without congestion control
 or partial acknowledgments, was practically sufficient.  However, with
 the introduction of post-quantum cryptographic (PQC) algorithms into
@@ -1448,12 +1448,13 @@ only the initiator can decide when to retransmit a message after a
 timeout <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>. The responder has no means to request
 retransmission or to signal that it has received an incomplete set of
 fragments.  This document proposes to extend that model slightly by
-allowing the responder, upon receiving one or more fragments of an<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7">IKE message and detecting that some fragments are missing, to send an
-IKEv2 response, of the same exchange with Fragment Acknowledgment
-notification indicating the missing fragments. This message is sent
-with the IKEv2 Response flag set.  It does not require a response,
-does not advance the IKEv2 Message ID state.<a href="#section-1-7" class="pilcrow">¶</a></p>
+allowing the responder, upon receiving one or more fragments of an
+IKE message and detecting that some fragments are missing, to send an
+IKEv2 response, of the same exchange with Fragments Acknowledgment
+notification indicating the missing fragments. The IKEv2 responder
+send message with the IKEv2 Response flag set, while the initiator
+send it without the IKEv2 Response flag set.  It does not require a
+response, does not advance the IKEv2 Message ID state.<a href="#section-1-6" class="pilcrow">¶</a></p>
 <section id="section-1.1">
         <h3 id="name-terminology">
 <a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
@@ -1501,7 +1502,7 @@ delayed delivery where multiple messages share the same Message ID.<a href="#sec
 Initiator                        Responder
 
 IKE_INTERMEDIATE --------------&gt; received some fragments send back ACK
-                        /------- IKE_INTERMEDIATE (with ACK only)
+                        /------- IKE_INTERMEDIATE (with ACK only, R=1)
                        /
 Full retransmit       /
 IKE_INTERMEDIATE ----/---------&gt;
@@ -1530,7 +1531,7 @@ IKE_INTERMEDIATE ------/-------&gt;
                  &lt;---/           fragment received (although see below)
 Received at least one     /----- IKE_INTERMEDIATE
 fragment                 /
-IKE_INTERMEDIATE (with ACK) ---&gt;
+IKE_INTERMEDIATE (with ACK, R=0) ---&gt;
                        /         Only send missing fragments
                  &lt;----/   /----- IKE_INTERMEDIATE
 Possibly send another    /
@@ -1586,7 +1587,7 @@ additional missing fragments.  This allows the sender to selectively
 retransmit only those fragments that have not been received.  The
 Total Fragments field is present in each fragment header, as defined
 in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span>, Section 2.5.  For example: 4,4; 7,10; and so on.<a href="#section-3-8" class="pilcrow">¶</a></p>
-<p id="section-3-9">FRFRAGMENT_ACK_RESAGMENT_ACK_REQ or FRAGMENT_ACK_RES depends on
+<p id="section-3-9">FRAGMENT_ACK_RES FRAGMENT_ACK_REQ or FRAGMENT_ACK_RES depends on
 whether a peer is acknowledging an IKEv2 request or a response.<a href="#section-3-9" class="pilcrow">¶</a></p>
 <section id="section-3.1">
         <h3 id="name-sending-fragment-acknowledg">
@@ -1598,12 +1599,12 @@ of a request. See <a href="#ike-intermediate-request" class="auto internal xref"
 initiator MAY send a Fragment Acknowledgment notification after
 receiving one or more fragments of a response. See <a href="#ike-intermediate-response" class="auto internal xref">Figure 2</a>.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
 <p id="section-3.1-2">When the initiator sends a FRAGMENT_ACK_RES notification in response
-to a fragmented response, it MUST set the IKE header Response (R)
-bit. This results in a message that is technically a
-“response to a response” and reuses the same Message ID, which is
+to a fragmented response, it MUST NOT set the IKE header Response (R)
+bit. This results in a message reuses the same Message ID, which is
 unusual in IKEv2.  However, the notifier is distinct FRAGMENT_ACK_RES.
 This message is informational in nature, does not advance the
-Message ID state, and does not require a response.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+Message ID state, and does not require a response. The exchange type
+is same the request.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
 </section>
 <section id="section-3.2">
         <h3 id="name-processing-fragment-acknowl">
@@ -1655,8 +1656,8 @@ FRAGMENT_ACK_SUPPORTED.<a href="#section-5-1" class="pilcrow">¶</a></p>
 <a href="#section-6" class="section-number selfRef">6. </a><a href="#name-operational-considerations" class="section-name selfRef">Operational Considerations</a>
       </h2>
 <p id="section-6-1">The FRAGMENT_ACK notification message SHOULD NOT be large enough to
-cause path-MTU issues.  If the number of acknowledged fragments
-results in a payload that approaches the path MTU or the IKEv2
+cause PMTU issues.  If the number of acknowledged fragments
+results in a payload that approaches the PMTU or the IKEv2
 fragment size, the sender MAY limit the number of missing fragment
 ranges included in a single message and send multiple FRAGMENT_ACK
 messages if necessary.  Implementations SHOULD ensure that each
@@ -1717,36 +1718,39 @@ of this document and are expected to be resolved or removed if the
 document becomes a Working Group item.<a href="#section-7-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-7-2.1">
-          <p id="section-7-2.1.1">Path MTU discovery mentioned in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> is currently ignored;
-applicability TBD.<a href="#section-7-2.1.1" class="pilcrow">¶</a></p>
+          <p id="section-7-2.1.1">PMTU discovery mentioned in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span> should work as it is.<a href="#section-7-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.2">
-          <p id="section-7-2.2.1">When fragments exceed the path MTU, they may not be acknowledged,
-and the IKE state will not advance. This will have re-fragmented
-as specified in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span><a href="#section-7-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-7-2.2.1">This I.D. opens up possibility to send fragments of different
+sizes for PMTU detection.<a href="#section-7-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.3">
-          <p id="section-7-2.3.1">Why not use IKEv2 INFORMATIONAL? That may adhere more to IKEv2.
-However, every INFORMATIONAL needs a response. And if there is no
-response the INFORMATIONAL message MUST be retransmitted to advance
-IKE state. This would lead to complex unpredictable retransmissions.<a href="#section-7-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-7-2.3.1">When fragments exceed the PMTU, they may not be acknowledged,
+and the IKE state will not advance. This will have re-fragmented
+as specified in <span>[<a href="#RFC7383" class="cite xref">RFC7383</a>]</span><a href="#section-7-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.4">
-          <p id="section-7-2.4.1">Why not make new IKEv2 exchange without a response? Instead of
+          <p id="section-7-2.4.1">Why not use IKEv2 INFORMATIONAL? That may adhere more to IKEv2.
+However, every INFORMATIONAL needs a response. And if there is no
+response the INFORMATIONAL message MUST be retransmitted to advance
+IKE state. This would lead to complex unpredictable retransmissions.<a href="#section-7-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-7-2.5">
+          <p id="section-7-2.5.1">Why not make new IKEv2 exchange without a response? Instead of
 responding to the same : responding with IKE_AUTH or IKE_INTERMEDIATE
 This is worth considering. New Exchange IKE_FRAG_ACK : which has no
 response. The message will carry IKE exchange and message ID it is
 responding to. This might be bigger change. This will be a bigger
-protocol change. Probably too complicated?<a href="#section-7-2.4.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-7-2.5">
-          <p id="section-7-2.5.1">Should every acknowledgment sent by an IKE peer MUST include the
-entire state of the buffer. That is, acknowledgments are cumulative.
-However, when the entire state does not conservatively fit into one
-packet FRAGMENT_ACK message would be partial.<a href="#section-7-2.5.1" class="pilcrow">¶</a></p>
+protocol change. Probably too complicated?<a href="#section-7-2.5.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.6">
-          <p id="section-7-2.6.1">Rename ACK to NACK? -ve acknowledgment? or SACK May be later?<a href="#section-7-2.6.1" class="pilcrow">¶</a></p>
+          <p id="section-7-2.6.1">Should every acknowledgment sent by an IKE peer MUST include the
+entire state of the buffer. That is, acknowledgments are cumulative.
+However, when the entire state does not conservatively fit into one
+packet FRAGMENT_ACK message would be partial.<a href="#section-7-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-7-2.7">
+          <p id="section-7-2.7.1">Rename ACK to NACK? -ve acknowledgment? or SACK May be later?<a href="#section-7-2.7.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <section id="section-7.1">
