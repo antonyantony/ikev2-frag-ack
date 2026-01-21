@@ -6,8 +6,8 @@ IP Security Maintenance and Extensions                         A. Antony
 Internet-Draft                                               S. Klassert
 Updates: RFC7383 (if approved)                                   secunet
 Intended status: Standards Track                              T. Brunner
-Expires: 16 July 2026                                      codelabs GmbH
-                                                         12 January 2026
+Expires: 25 July 2026                                      codelabs GmbH
+                                                         21 January 2026
 
 
                 IKEv2 Fragment Acknowledgment Extension
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 16 July 2026.
+   This Internet-Draft will expire on 25 July 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 1]
+Antony, et al.            Expires 25 July 2026                  [Page 1]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 2]
+Antony, et al.            Expires 25 July 2026                  [Page 2]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -165,7 +165,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 3]
+Antony, et al.            Expires 25 July 2026                  [Page 3]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -221,7 +221,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 4]
+Antony, et al.            Expires 25 July 2026                  [Page 4]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -277,7 +277,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 5]
+Antony, et al.            Expires 25 July 2026                  [Page 5]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -333,7 +333,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 6]
+Antony, et al.            Expires 25 July 2026                  [Page 6]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -389,7 +389,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 7]
+Antony, et al.            Expires 25 July 2026                  [Page 7]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -427,7 +427,8 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
    *  PMTU discovery mentioned in [RFC7383] should work as it is.
 
    *  This I.D. opens up possibility to send fragments of different
-      sizes for PMTU detection.
+      sizes for PMTU detection.  Because of the ACKs the sender can
+      deduce PMTU.
 
    *  When fragments exceed the PMTU, they may not be acknowledged, and
       the IKE state will not advance.  This will have re-fragmented as
@@ -439,17 +440,19 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
       advance IKE state.  This would lead to complex unpredictable
       retransmissions.
 
-   *  Why not make new IKEv2 exchange without a response?  Instead of
-      responding to the same : responding with IKE_AUTH or
-      IKE_INTERMEDIATE This is worth considering.  New Exchange
 
 
 
-Antony, et al.            Expires 16 July 2026                  [Page 8]
+
+
+Antony, et al.            Expires 25 July 2026                  [Page 8]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
+   *  Why not make new IKEv2 exchange without a response?  Instead of
+      responding to the same : responding with IKE_AUTH or
+      IKE_INTERMEDIATE This is worth considering.  New Exchange
       IKE_FRAG_ACK : which has no response.  The message will carry IKE
       exchange and message ID it is responding to.  This might be bigger
       change.  This will be a bigger protocol change.  Probably too
@@ -498,10 +501,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-
-
-
-Antony, et al.            Expires 16 July 2026                  [Page 9]
+Antony, et al.            Expires 25 July 2026                  [Page 9]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -557,7 +557,7 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 16 July 2026                 [Page 10]
+Antony, et al.            Expires 25 July 2026                 [Page 10]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -613,7 +613,7 @@ Appendix A.  Additional Stuff
 
 
 
-Antony, et al.            Expires 16 July 2026                 [Page 11]
+Antony, et al.            Expires 25 July 2026                 [Page 11]
 
 Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
@@ -669,4 +669,4 @@ Authors' Addresses
 
 
 
-Antony, et al.            Expires 16 July 2026                 [Page 12]
+Antony, et al.            Expires 25 July 2026                 [Page 12]
