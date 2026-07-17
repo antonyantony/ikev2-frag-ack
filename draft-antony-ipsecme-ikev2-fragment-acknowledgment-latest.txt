@@ -6,12 +6,12 @@ IP Security Maintenance and Extensions                         A. Antony
 Internet-Draft                                               S. Klassert
 Updates: RFC7383 (if approved)                                   secunet
 Intended status: Standards Track                              T. Brunner
-Expires: 25 July 2026                                      codelabs GmbH
-                                                         21 January 2026
+Expires: 18 January 2027                                   codelabs GmbH
+                                                            17 July 2026
 
 
                 IKEv2 Fragment Acknowledgment Extension
-         draft-antony-ipsecme-ikev2-fragment-acknowledgment-04
+         draft-antony-ipsecme-ikev2-fragment-acknowledgment-05
 
 Abstract
 
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 25 July 2026.
+   This Internet-Draft will expire on 18 January 2027.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 1]
+Antony, et al.           Expires 18 January 2027                [Page 1]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 2]
+Antony, et al.           Expires 18 January 2027                [Page 2]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
    There are also several proposals to extend IKEv2 beyond the
@@ -165,9 +165,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 3]
+Antony, et al.           Expires 18 January 2027                [Page 3]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
 2.  Requirements Language
@@ -221,9 +221,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 4]
+Antony, et al.           Expires 18 January 2027                [Page 4]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
    # Response
@@ -277,9 +277,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 5]
+Antony, et al.           Expires 18 January 2027                [Page 5]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
    retransmit only those fragments that have not been received.  The
@@ -333,9 +333,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 6]
+Antony, et al.           Expires 18 January 2027                [Page 6]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
    If either peer omits the FRAGMENT_ACK_SUPPORTED notification in
@@ -389,9 +389,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 7]
+Antony, et al.           Expires 18 January 2027                [Page 7]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
 6.2.  IV reuse when using AEAD
@@ -445,9 +445,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 8]
+Antony, et al.           Expires 18 January 2027                [Page 8]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
    *  Why not make new IKEv2 exchange without a response?  Instead of
@@ -501,9 +501,9 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                  [Page 9]
+Antony, et al.           Expires 18 January 2027                [Page 9]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
          +========+============================+=================+
@@ -557,24 +557,24 @@ Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
 
 
 
-Antony, et al.            Expires 25 July 2026                 [Page 10]
+Antony, et al.           Expires 18 January 2027               [Page 10]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
    [I-D.ietf-ipsecme-ikev2-reliable-transport]
               Smyslov, V. and T. Reddy.K, "Separate Transports for IKE
               and ESP", Work in Progress, Internet-Draft, draft-ietf-
-              ipsecme-ikev2-reliable-transport-00, 6 October 2025,
+              ipsecme-ikev2-reliable-transport-06, 24 June 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-ipsecme-
-              ikev2-reliable-transport-00>.
+              ikev2-reliable-transport-06>.
 
    [I-D.nir-ipsecme-big-payload]
               Nir, Y., "A Larger Internet Key Exchange version 2 (IKEv2)
               Payload", Work in Progress, Internet-Draft, draft-nir-
-              ipsecme-big-payload-06, 14 September 2025,
+              ipsecme-big-payload-07, 17 March 2026,
               <https://datatracker.ietf.org/doc/html/draft-nir-ipsecme-
-              big-payload-06>.
+              big-payload-07>.
 
    [I-D.smyslov-ipsecme-ikev2-extended-pld]
               Smyslov, V., "Extended IKEv2 Payload Format", Work in
@@ -613,9 +613,9 @@ Appendix A.  Additional Stuff
 
 
 
-Antony, et al.            Expires 25 July 2026                 [Page 11]
+Antony, et al.           Expires 18 January 2027               [Page 11]
 
-Internet-Draft        IKEv2 Fragment Acknowledgment         January 2026
+Internet-Draft        IKEv2 Fragment Acknowledgment            July 2026
 
 
 Authors' Addresses
@@ -669,4 +669,4 @@ Authors' Addresses
 
 
 
-Antony, et al.            Expires 25 July 2026                 [Page 12]
+Antony, et al.           Expires 18 January 2027               [Page 12]
